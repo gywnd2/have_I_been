@@ -7,7 +7,7 @@ import android.os.Build;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-public class PermissionManager {
+public class PermissionHelper {
     ////////////////////////////////////////////////////////////////////////////////////////////////
     /* 권한 확인 및 요청
     /  https://3001ssw.tistory.com/191

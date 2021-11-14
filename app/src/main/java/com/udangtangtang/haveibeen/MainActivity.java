@@ -2,7 +2,7 @@ package com.udangtangtang.haveibeen;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
-import static com.udangtangtang.haveibeen.PermissionManager.isPermissionGranted;
+import static com.udangtangtang.haveibeen.PermissionHelper.isPermissionGranted;
 
 import android.Manifest;
 import android.content.Intent;
@@ -15,7 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.util.Log;
 import android.view.View;
 
 import androidx.core.app.ActivityCompat;
@@ -47,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Marker[] markers;
     private int dbSize;
     private String selectedFileName;
+    private PictureScanHelper pictureScanHelper;
 
     private static final int PERMISSION_REQUEST_CODE = 100;
     private static final String[] PERMISSIONS = {
@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(binding.getRoot());
 
         // 외부 저장소 권한 요청
-        PermissionManager.checkPermission(this, READ_EXTERNAL_STORAGE, REQ_PERMISSION_CALLBACK);
+        PermissionHelper.checkPermission(this, READ_EXTERNAL_STORAGE, REQ_PERMISSION_CALLBACK);
 
         // 권한이 있다면 DB 초기화 및 사진 스캔
         // TODO : 이미지가 많을 경우 Thread로 구현?
@@ -74,10 +74,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             dbHelper.initializeDB();
 
             // 사진 스캔
-            fileList=PictureMananger.scanPictures(this);
+            pictureScanHelper=new PictureScanHelper(this);
+            fileList= pictureScanHelper.scanPictures(this);
 
             // DB에 이미지 파일 추가하고 좌표 있는 이미지 개수 받아오기
-            PictureMananger.initializePictureDB(dbHelper, fileList);
+            pictureScanHelper.initializePictureDB(dbHelper, fileList);
             dbSize=dbHelper.getSizeOfPictureDB();
         }
 

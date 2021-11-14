@@ -5,9 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.Address;
+import android.location.Geocoder;
 import android.media.ExifInterface;
 import android.net.Uri;
-import android.opengl.Visibility;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -15,12 +16,15 @@ import android.widget.Toast;
 import com.udangtangtang.haveibeen.databinding.ActivityRecordDetailBinding;
 
 import java.io.IOException;
+import java.util.List;
 
 public class RecordDetailActivity extends AppCompatActivity {
     private ActivityRecordDetailBinding binding;
     private DBHelper dbHelper;
     private String fileName;
     private ExifInterface exifInterface;
+    private GeocodingHelper geocodingHelper;
+    private List<Address> addressList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,14 +50,18 @@ public class RecordDetailActivity extends AppCompatActivity {
 
         // 받아온 fileName으로 기록 조회
         SQLiteDatabase sqlDB = dbHelper.getReadableDatabase();
-        String[] columns = {dbHelper.LOCATION_NAME, dbHelper.RATING, dbHelper.COMMENT};
+        String[] columns = {dbHelper.LOCATION_NAME, dbHelper.RATING, dbHelper.COMMENT, dbHelper.LATITUDE, dbHelper.LONGTITUDE};
         String[] params = {fileName};
         Cursor cursor = sqlDB.query(dbHelper.TABLE_NAME, columns, dbHelper.FILE_NAME + "=?", params, null, null, null);
 
         // 데이터 내용 표시
         if (cursor != null && cursor.moveToFirst()) {
+            // 지오코딩을 위한 Helper 초기화
+            geocodingHelper=new GeocodingHelper(this, cursor.getDouble(3), cursor.getDouble(4));
+            // 주소 표시
+            binding.recordDetailAddress.setText(geocodingHelper.getAddress());
+
             binding.recordDetailLocationName.setText(cursor.getString(0).equals("null") ? "'수정'을 터치하여 입력해보세요." : cursor.getString(0));
-            binding.recordDetailAddress.setText();
             binding.recordDetailDatetime.setText(exifInterface.getAttribute(ExifInterface.TAG_DATETIME));
             binding.recordDetailRating.setRating(String.valueOf(cursor.getFloat(1)).equals("null") ? (float) 0.0 : cursor.getFloat(1));
             binding.recordDetailComment.setText(cursor.getString(2).equals("null") ? "어떤 장소였나요?" : cursor.getString(2));
@@ -95,7 +103,8 @@ public class RecordDetailActivity extends AppCompatActivity {
         binding.recordDetailEditButtonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO : 저장하기 구현
+                // DB 업데이트
+                dbHelper.updateDB(fileName, binding.recordDetailEditLocationName.getText().toString(), binding.recordDetailEditRating.getRating(), binding.recordDetailEditComment.getText().toString());
 
                 // 저장 되었음을 확인하기 위해 저장 시에는 다시 조회하여 출력
                 // 받아온 fileName으로 기록 조회
@@ -107,8 +116,8 @@ public class RecordDetailActivity extends AppCompatActivity {
                 // 데이터 내용 표시
                 if (cursor != null && cursor.moveToFirst()) {
                     binding.recordDetailLocationName.setText(cursor.getString(0).equals("null") ? "'수정'을 터치하여 입력해보세요." : cursor.getString(0));
-//                    binding.recordDetailAddress.setText(cursor.getString(0).equals("null") ? "주소 가져오기" : cursor.getString(0));
-//                    binding.recordDetailDatetime.setText(cursor.getString(0).equals("null") ? "시간 가져오기" : cursor.getString(0));
+                    binding.recordDetailAddress.setText(geocodingHelper.getAddress());
+                    binding.recordDetailDatetime.setText(exifInterface.getAttribute(ExifInterface.TAG_DATETIME));
                     binding.recordDetailRating.setRating(String.valueOf(cursor.getFloat(1)).equals("null") ? (float) 0.0 : cursor.getFloat(1));
                     binding.recordDetailComment.setText(cursor.getString(2).equals("null") ? "어떤 장소였나요?" : cursor.getString(2));
                 }
@@ -130,4 +139,5 @@ public class RecordDetailActivity extends AppCompatActivity {
             }
         });
     }
+
 }

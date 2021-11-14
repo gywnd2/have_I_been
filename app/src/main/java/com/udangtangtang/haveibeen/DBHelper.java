@@ -1,5 +1,6 @@
 package com.udangtangtang.haveibeen;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -58,34 +59,42 @@ public class DBHelper extends SQLiteOpenHelper {
         Toast.makeText(mContext, "DB 초기화 됨", Toast.LENGTH_LONG).show();
     }
 
-    public void insertDB(String fileName, String locationName, double latitude, double longtitude, String address, String date, float rating, String comment) {
-        DBHelper myHelper = new DBHelper(mContext);
-        SQLiteDatabase sqlDB = myHelper.getWritableDatabase();
-
-        //TODO : SQL문 수정
-        sqlDB.execSQL("insert into myDB values('" + fileName + "','" + locationName + "','" + latitude + "','"+longtitude+"','"+address+"','"+date+"','"+rating+"','"+comment+");" + "');");
-        sqlDB.close();
-    }
+//    public void insertDB(String fileName, String locationName, double latitude, double longtitude, String address, String date, float rating, String comment) {
+//        DBHelper myHelper = new DBHelper(mContext);
+//        SQLiteDatabase sqlDB = myHelper.getWritableDatabase();
+//
+//        //TODO : SQL문 수정
+//        sqlDB.execSQL("insert into myDB values('" + fileName + "','" + locationName + "','" + latitude + "','"+longtitude+"','"+address+"','"+date+"','"+rating+"','"+comment+");" + "');");
+//        sqlDB.close();
+//    }
 
     // TODO : 기록 수정 시 업데이트 구현
-    public void updateDB(String locationName, float rating, String comment){
+    public void updateDB(String fileName, String locationName, float rating, String comment){
         DBHelper myHelper=new DBHelper(mContext);
         SQLiteDatabase sqlDB=myHelper.getWritableDatabase();
-//        sqlDB.execSQL("update myDB ");
-//        sqlDB.close();
+        ContentValues contentValues=new ContentValues();
+        contentValues.put(LOCATION_NAME, locationName);
+        contentValues.put(RATING, rating);
+        contentValues.put(COMMENT, comment);
+        sqlDB.update(TABLE_NAME, contentValues, FILE_NAME+"=?", new String[]{fileName});
+        sqlDB.close();
     }
 
     // DB에 사진 파일명 추가
-    public void insertImageToDB(String fileName, double latitude, double longtitude) {
+    public void insertImageToDB(String fileName, double latitude, double longtitude, String address, String datetime) {
         DBHelper myHelper = new DBHelper(mContext);
         SQLiteDatabase sqlDB = myHelper.getWritableDatabase();
 
-        //TODO : 파일명, 위/경도만 삽입
-        sqlDB.execSQL("insert into myDB values('" + fileName + "','" + null + "','" + latitude + "','"+longtitude+"','"+null+"','"+null+"','"+null+"','"+null+");" + "');");
+        // TODO: 주소도 추가
+        ContentValues contentValues=new ContentValues();
+        contentValues.put(FILE_NAME, fileName);
+        contentValues.put(LATITUDE, latitude);
+        contentValues.put(LONGTITUDE, longtitude);
+        contentValues.put(ADDRESS, address);
+        sqlDB.insert(TABLE_NAME, null, contentValues);
         sqlDB.close();
         Log.i(TAG, "Image file inserted to DB : "+fileName+" latitude : "+String.valueOf(latitude)+" longtitude : "+String.valueOf(longtitude));
     }
-
 
     // 좌표가 있는 이미지 리스트 개수 반환
     public int getSizeOfPictureDB(){
