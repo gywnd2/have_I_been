@@ -1,19 +1,17 @@
-package com.udangtangtang.haveibeen;
+package com.udangtangtang.haveibeen.util;
 
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.udangtangtang.haveibeen.R;
+import com.udangtangtang.haveibeen.model.DBHelper;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -22,14 +20,11 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
     private Context context;
     private ArrayList<String> sameLocationPictures;
     private DBHelper dbHelper;
-    private String latitude, longtitude;
 
     ViewPagerAdapter(Context context, String latitude, String longtitude) {
         this.context = context;
         dbHelper = new DBHelper(context);
         this.sameLocationPictures = new ArrayList<>();
-        this.latitude=latitude;
-        this.longtitude=longtitude;
 
         // 입력 받은 위/경도로 같은 위치 이미지 가져오기
         this.sameLocationPictures.clear();

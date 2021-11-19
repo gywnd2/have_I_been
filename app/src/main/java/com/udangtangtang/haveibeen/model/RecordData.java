@@ -1,4 +1,4 @@
-package com.udangtangtang.haveibeen;
+package com.udangtangtang.haveibeen.model;
 
 public class RecordData {
     private String fileName;

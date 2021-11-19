@@ -1,4 +1,4 @@
-package com.udangtangtang.haveibeen;
+package com.udangtangtang.haveibeen.util;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -11,6 +11,9 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.udangtangtang.haveibeen.model.DBHelper;
+import com.udangtangtang.haveibeen.util.GeocodingHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;

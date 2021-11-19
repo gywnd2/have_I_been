@@ -1,4 +1,4 @@
-package com.udangtangtang.haveibeen;
+package com.udangtangtang.haveibeen.util;
 
 import android.content.Context;
 import android.location.Address;

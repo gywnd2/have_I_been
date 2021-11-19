@@ -1,13 +1,11 @@
-package com.udangtangtang.haveibeen;
+package com.udangtangtang.haveibeen.model;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.media.Rating;
 import android.util.Log;
-import android.widget.RatingBar;
 import android.widget.Toast;
 
 import java.util.ArrayList;

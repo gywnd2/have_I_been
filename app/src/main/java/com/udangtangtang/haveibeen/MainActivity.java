@@ -2,7 +2,7 @@ package com.udangtangtang.haveibeen;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
-import static com.udangtangtang.haveibeen.PermissionHelper.isPermissionGranted;
+import static com.udangtangtang.haveibeen.util.PermissionHelper.isPermissionGranted;
 
 import android.Manifest;
 import android.content.Intent;
@@ -15,7 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.util.Log;
 import android.view.View;
 
 import androidx.core.app.ActivityCompat;
@@ -30,10 +29,12 @@ import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.Overlay;
 import com.naver.maps.map.util.FusedLocationSource;
 import com.udangtangtang.haveibeen.databinding.ActivityMainBinding;
+import com.udangtangtang.haveibeen.model.DBHelper;
+import com.udangtangtang.haveibeen.util.PermissionHelper;
+import com.udangtangtang.haveibeen.util.PictureScanHelper;
 
 import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 

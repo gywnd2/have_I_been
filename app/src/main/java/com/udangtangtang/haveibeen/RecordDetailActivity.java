@@ -7,14 +7,14 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Address;
-import android.location.Geocoder;
 import android.media.ExifInterface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Toast;
 
 import com.udangtangtang.haveibeen.databinding.ActivityRecordDetailBinding;
+import com.udangtangtang.haveibeen.model.DBHelper;
+import com.udangtangtang.haveibeen.util.GeocodingHelper;
+import com.udangtangtang.haveibeen.util.ViewPagerAdapter;
 
 import java.io.IOException;
 import java.util.List;
