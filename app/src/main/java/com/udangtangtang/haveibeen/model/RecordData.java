@@ -6,6 +6,13 @@ public class RecordData {
     private float rating;
     private String comment;
 
+    public RecordData(){
+        this.fileName=null;
+        this.locationName=null;
+        this.rating=(float)0.0;
+        this.comment=null;
+    }
+
     public RecordData(String fileNameString, String locationNameString , float ratingScore, String commentString){
         fileName=fileNameString;
         locationName=locationNameString;

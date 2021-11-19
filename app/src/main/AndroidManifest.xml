@@ -15,11 +15,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Haveibeen">
-<!--        android:hardwareAccelerated="false"-->
-<!--        android:largeHeap="true">-->
         <activity
             android:name=".SettingActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:theme="@style/Theme.Haveibeen.NoActionBar"/>
         <activity
             android:name=".RecordDetailActivity"
             android:exported="true"

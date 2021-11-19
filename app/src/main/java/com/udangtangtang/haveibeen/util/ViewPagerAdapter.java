@@ -21,14 +21,14 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
     private ArrayList<String> sameLocationPictures;
     private DBHelper dbHelper;
 
-    public ViewPagerAdapter(Context context, String latitude, String longtitude) {
+    public ViewPagerAdapter(Context context, String[] latLng) {
         this.context = context;
         dbHelper = new DBHelper(context);
         this.sameLocationPictures = new ArrayList<>();
 
         // 입력 받은 위/경도로 같은 위치 이미지 가져오기
         this.sameLocationPictures.clear();
-        this.sameLocationPictures = dbHelper.getSameLocationPictures(latitude, longtitude);
+        this.sameLocationPictures = dbHelper.getSameLocationPictures(latLng);
     }
 
     @NonNull

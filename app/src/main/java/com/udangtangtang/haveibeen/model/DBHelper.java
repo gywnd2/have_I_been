@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.icu.text.IDNA;
+import android.media.ExifInterface;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -98,6 +100,7 @@ public class DBHelper extends SQLiteOpenHelper {
         contentValues.put(LATITUDE, String.valueOf(latitude));
         contentValues.put(LONGTITUDE, String.valueOf(longtitude));
         contentValues.put(ADDRESS, address);
+        contentValues.put(DATE, datetime);
         sqlDB.insert(TABLE_NAME, null, contentValues);
         sqlDB.close();
         Log.i(TAG, "Image file inserted to DB : "+fileName+" latitude : "+String.valueOf(latitude)+" longtitude : "+String.valueOf(longtitude)+" address : "+address+" datetime : "+datetime);
@@ -118,7 +121,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return result;
     }
 
-    public ArrayList<String> getSameLocationPictures(String latitude, String longtitude){
+    public ArrayList<String> getSameLocationPictures(String[] latLng){
         // 같은 위/경도의 이미지 목록을 내보낼 ArrayList 선언
         ArrayList<String> sameLocationPictures=new ArrayList<>();
 
@@ -126,7 +129,7 @@ public class DBHelper extends SQLiteOpenHelper {
         DBHelper myHelper = new DBHelper(mContext);
         SQLiteDatabase sqlDB = myHelper.getWritableDatabase();
         Cursor cursor;
-        String[] params={latitude, longtitude};
+        String[] params={latLng[0], latLng[1]};
         cursor = sqlDB.rawQuery("select filename from myDB where latitude=? AND longtitude=?;", params);
         if(cursor!=null && cursor.moveToFirst()){
             // 1회 실행 후 while에서 moveToNext()
@@ -141,35 +144,65 @@ public class DBHelper extends SQLiteOpenHelper {
         return sameLocationPictures;
     }
 
-    public void searchDB() {
-        DBHelper myHelper = new DBHelper(mContext);
-        SQLiteDatabase sqlDB = myHelper.getWritableDatabase();
-        Cursor cursor;
-        cursor = sqlDB.rawQuery("select * from myDB;", null);
-
-        String string1 = "Movie Title" + System.lineSeparator();
-        String string2 = "Director" + System.lineSeparator();
-        String string3 = "Released Year" + System.lineSeparator();
-
-        string1 += "-----------" + System.lineSeparator();
-        string2 += "-----------" + System.lineSeparator();
-        string3 += "-----------" + System.lineSeparator();
-
-        while (cursor.moveToNext()) {
-            string1 += cursor.getString(0) + System.lineSeparator();
-            string2 += cursor.getString(1) + System.lineSeparator();
-            string3 += cursor.getString(2) + System.lineSeparator();
+    // 위/경도로 filename 조회
+    public String getFileNameByLatLng(String[] latLng){
+        // 받아온 위/경도로 기록 조회
+        DBHelper dbHelper=new DBHelper(mContext);
+        SQLiteDatabase sqlDB = dbHelper.getReadableDatabase();
+        Cursor cursor = sqlDB.rawQuery("select filename, locName, rating, comment from myDB where latitude=? AND longtitude=?;", latLng);
+        if(cursor!=null && cursor.moveToFirst()){
+            return cursor.getString(0);
+        }else{
+            return null;
         }
-
-        //TODO : 여기 수정
-//        binding.textTitleColumnOne.setText(string1);
-//        binding.textTitleColumnTwo.setText(string2);
-//        binding.textTitleColumnThree.setText(string3);
-
-        cursor.close();
-        sqlDB.close();
     }
 
+    // filename으로 정보창 데이터 받기
+    public InfoWindowData getInfoWindowData(String[] latLng){
+        InfoWindowData infoWindowData=new InfoWindowData();
+
+        // 받아온 fileName으로 기록 조회
+        DBHelper dbHelper=new DBHelper(mContext);
+        SQLiteDatabase sqlDB = dbHelper.getReadableDatabase();
+        String[] columns = {dbHelper.LOCATION_NAME, dbHelper.DATE, dbHelper.COMMENT, dbHelper.RATING};
+        String[] params = {latLng[0], latLng[1]};
+        Cursor cursor = sqlDB.rawQuery("select locName, address, date, comment, rating from myDB where latitude=? AND longtitude=?;", params);
+
+        // 데이터 내용 표시
+        if (cursor != null && cursor.moveToFirst()) {
+            infoWindowData.setLocationName(cursor.getString(0));
+            infoWindowData.setAddress(cursor.getString(1));
+            infoWindowData.setDatetime(cursor.getString(2));
+            infoWindowData.setComment(cursor.getString(3));
+            infoWindowData.setRating(cursor.getFloat(4));
+        }
+
+        return infoWindowData;
+    }
+
+    // filename으로 locName, rating, comment 찾기
+    public RecordData getRecordData(String filename){
+        RecordData recordData=new RecordData();
+
+        // 받아온 fileName으로 기록 조회
+        DBHelper dbHelper=new DBHelper(mContext);
+        SQLiteDatabase sqlDB = dbHelper.getReadableDatabase();
+        String[] columns = {dbHelper.FILE_NAME,dbHelper.LOCATION_NAME, dbHelper.RATING, dbHelper.COMMENT};
+        String[] params = {filename};
+        Cursor cursor = sqlDB.query(dbHelper.TABLE_NAME, columns, dbHelper.FILE_NAME + "=?", params, null, null, null);
+
+        // 데이터 내용 표시
+        if (cursor != null && cursor.moveToFirst()) {
+            recordData.setFileName(cursor.getString(0));
+            recordData.setLocationName(cursor.getString(1));
+            recordData.setRating(cursor.getFloat(2));
+            recordData.setComment(cursor.getString(3));
+        }
+
+        // DB연결 종료
+        sqlDB.close();
+        return recordData;
+    }
 
     // 모든 데이터 출력
     public void showAllData(){
