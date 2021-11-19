@@ -21,7 +21,7 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<ViewPagerAdapter.View
     private ArrayList<String> sameLocationPictures;
     private DBHelper dbHelper;
 
-    ViewPagerAdapter(Context context, String latitude, String longtitude) {
+    public ViewPagerAdapter(Context context, String latitude, String longtitude) {
         this.context = context;
         dbHelper = new DBHelper(context);
         this.sameLocationPictures = new ArrayList<>();

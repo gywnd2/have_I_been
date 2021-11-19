@@ -1,6 +1,7 @@
 package com.udangtangtang.haveibeen;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.Intent;

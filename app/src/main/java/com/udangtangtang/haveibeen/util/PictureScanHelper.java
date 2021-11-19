@@ -57,15 +57,12 @@ public class PictureScanHelper {
                 Cursor cursor1=sqlDB.rawQuery("select filename from myDB where filename=?;",params);
                 if(cursor1!=null&&cursor1.moveToFirst()) {
                     // 존재하면 pass
-                    Toast.makeText(context, "이미 존재하는 이미지 : "+absolutePathOfImage, Toast.LENGTH_SHORT).show();
                 }else{
                     // 존재하지 않으면 추가
-                    Toast.makeText(context, "존재하지 않는 이미지 : "+absolutePathOfImage, Toast.LENGTH_SHORT).show();
                     fileList.add(absolutePathOfImage);
                 }
             }
         }
-        Toast.makeText(context, "Trying to pass fileList : "+fileList.toString(), Toast.LENGTH_LONG).show();
         sqlDB.close();
         return fileList;
     }
