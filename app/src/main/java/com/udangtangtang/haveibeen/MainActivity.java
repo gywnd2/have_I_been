@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.View;
 
 import androidx.core.app.ActivityCompat;
@@ -32,6 +33,7 @@ import com.udangtangtang.haveibeen.databinding.ActivityMainBinding;
 
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -45,8 +47,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private ArrayList<String> fileList;
     private Marker[] markers;
     private int dbSize;
-    private String selectedFileName;
+    private String[] selectedLatLng;
     private PictureScanHelper pictureScanHelper;
+
+    private static final String TAG="MainActivity";
 
     private static final int PERMISSION_REQUEST_CODE = 100;
     private static final String[] PERMISSIONS = {
@@ -68,49 +72,50 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // 권한이 있다면 DB 초기화 및 사진 스캔
         // TODO : 이미지가 많을 경우 Thread로 구현?
-        if(isPermissionGranted(this, READ_EXTERNAL_STORAGE)){
+        if (isPermissionGranted(this, READ_EXTERNAL_STORAGE)) {
             // DB 연결 및 초기화
-            dbHelper=new DBHelper(this);
-            dbHelper.initializeDB();
+            dbHelper = new DBHelper(this);
+            dbHelper.isInitialDB();
 
             // 사진 스캔
-            pictureScanHelper=new PictureScanHelper(this);
-            fileList= pictureScanHelper.scanPictures(this);
+            pictureScanHelper = new PictureScanHelper(this);
+            fileList=new ArrayList<>();
+            fileList = pictureScanHelper.scanPictures(this);
 
             // DB에 이미지 파일 추가하고 좌표 있는 이미지 개수 받아오기
             pictureScanHelper.initializePictureDB(dbHelper, fileList);
-            dbSize=dbHelper.getSizeOfPictureDB();
+            dbSize = dbHelper.getSizeOfPictureDB();
         }
 
         // mapView 초기화
         binding.mapView.getMapAsync(this);
-        mLocationSource=new FusedLocationSource(this, PERMISSION_REQUEST_CODE);
+        mLocationSource = new FusedLocationSource(this, PERMISSION_REQUEST_CODE);
     }
 
     @UiThread
     @Override
     public void onMapReady(@NonNull NaverMap naverMap) {
         // DB로부터 마커 추가
-        int markerIdx=0;
+        int markerIdx = 0;
         Cursor cursor;
-        markers=new Marker[dbSize];
-        SQLiteDatabase sqlDB = dbHelper.getWritableDatabase();
-        cursor=sqlDB.rawQuery("select locName, latitude, longtitude, address, date, rating from myDB;", null);
-        while(cursor.moveToNext()){
-            markers[markerIdx]=new Marker();
-            markers[markerIdx].setPosition(new LatLng(cursor.getDouble(1), cursor.getDouble(2)));
+        markers = new Marker[dbSize];
+        SQLiteDatabase sqlDB = dbHelper.getReadableDatabase();
+        cursor = sqlDB.rawQuery("select distinct latitude, longtitude from myDB", null);
+        while (cursor!=null&&cursor.moveToNext()) {
+            markers[markerIdx] = new Marker();
+            markers[markerIdx].setPosition(new LatLng(cursor.getDouble(0), cursor.getDouble(1)));
             markers[markerIdx].setMap(naverMap);
 
             // 마커 클릭 이벤트
             markers[markerIdx].setOnClickListener(this);
-            markerIdx+=1;
+            markerIdx += 1;
         }
 
         // DB연결 종료
         sqlDB.close();
 
         // 마커 정보창 생성
-        mInfoWindow=new InfoWindow();
+        mInfoWindow = new InfoWindow();
 
         // 정보창 어댑터 설정
         mInfoWindow.setAdapter(new InfoWindow.DefaultViewAdapter(this) {
@@ -122,26 +127,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 // 위/경도가 일치하는 기록 검색
                 SQLiteDatabase sqlDB = dbHelper.getReadableDatabase();
-                String[] columns={dbHelper.LOCATION_NAME, dbHelper.ADDRESS, dbHelper.DATE, dbHelper.COMMENT, dbHelper.RATING, dbHelper.FILE_NAME};
-                String[] params={String.valueOf(marker.getPosition().latitude), String.valueOf(marker.getPosition().longitude)};
-                Cursor cursor=sqlDB.query(dbHelper.TABLE_NAME, columns, "latitude=? AND longtitude=?", params,null, null,null);
+                String[] params = {String.valueOf(marker.getPosition().latitude), String.valueOf(marker.getPosition().longitude)};
+                Cursor cursor = sqlDB.rawQuery("select locName, address, date, comment, rating from myDB where latitude=? AND longtitude=?;", params);
 
                 // 가져온 데이터로 뷰 만들기
                 View view = View.inflate(MainActivity.this, R.layout.marker_infowindow, null);
-                if(cursor!=null && cursor.moveToFirst()){
-                    ((TextView) view.findViewById(R.id.infoWindow_locationTitle)).setText(cursor.getString(0).equals("null")?"눌러서 작성":cursor.getString(0));
-                    ((TextView) view.findViewById(R.id.infoWindow_locationAddress)).setText(cursor.getString(1).equals("null")?" ":cursor.getString(1));
-                    ((TextView) view.findViewById(R.id.infoWindow_datetime)).setText(cursor.getString(2).equals("null")?" ":cursor.getString(2));
-                    ((TextView) view.findViewById(R.id.infoWindow_comment)).setText(cursor.getString(3).equals("null);")?" ":cursor.getString(3));
-                    ((RatingBar) view.findViewById(R.id.infoWindow_ratingBar)).setRating(String.valueOf(cursor.getFloat(4)).equals("null")?(float)0.0:cursor.getFloat(4));
-                }
 
+                    if (cursor != null && cursor.moveToFirst()) {
+                        ((TextView) view.findViewById(R.id.infoWindow_locationTitle)).setText(cursor.getString(0)==null ? "눌러서 작성" : cursor.getString(0));
+                        ((TextView) view.findViewById(R.id.infoWindow_locationAddress)).setText(cursor.getString(1).equals("") ? " " : cursor.getString(1));
+                        ((TextView) view.findViewById(R.id.infoWindow_datetime)).setText(cursor.getString(2)==null ? " " : cursor.getString(2));
+                        ((TextView) view.findViewById(R.id.infoWindow_comment)).setText(cursor.getString(3)==null ? " " : cursor.getString(3));
+                        ((RatingBar) view.findViewById(R.id.infoWindow_ratingBar)).setRating(String.valueOf(cursor.getFloat(4))==null ? (float) 0.0 : cursor.getFloat(4));
+                    // 인텐트로 상세조회 페이지에 넘겨주기 위한 위/경도 기록
+                    selectedLatLng= new String[]{String.valueOf(marker.getPosition().latitude), String.valueOf(marker.getPosition().longitude)};
+                }
 
                 // DB연결 종료
                 sqlDB.close();
 
-                // 선택한 사진의 filename 기억
-                selectedFileName=cursor.getString(5);
                 return view;
             }
         });
@@ -151,26 +155,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public boolean onClick(@NonNull Overlay overlay) {
                 // 정보창 클릭 시 정보 상세정보 확인 액티비티 전환
-                Intent intent=new Intent(binding.getRoot().getContext(), RecordDetailActivity.class);
-                // 인텐트에 filename을 첨부해서 전달
-                intent.putExtra("fileName", selectedFileName);
+                Intent intent = new Intent(binding.getRoot().getContext(), RecordDetailActivity.class);
+                // 인텐트에 위/경도를 첨부해서 전달
+                intent.putExtra("selectedLatLng", selectedLatLng);
                 startActivity(intent);
                 return false;
             }
         });
 
         // 정보창이 아닌 지도 클릭 시 정보창 닫기
-        naverMap.setOnMapClickListener((coord, point)->{
+        naverMap.setOnMapClickListener((coord, point) -> {
             mInfoWindow.close();
         });
 
         // 지도 UI
-        uiSettings=naverMap.getUiSettings();
+        uiSettings = naverMap.getUiSettings();
         uiSettings.setCompassEnabled(true);
         uiSettings.setLocationButtonEnabled(true);
 
         // 위치 확인을 위한 locationSource와 권한 요청
-        mNaverMap=naverMap;
+        mNaverMap = naverMap;
         naverMap.setLocationSource(mLocationSource);
         ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_REQUEST_CODE);
     }
@@ -194,8 +198,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Marker marker = (Marker) overlay;
             if (marker.getInfoWindow() != null) {
                 mInfoWindow.close();
-            }
-            else {
+            } else {
                 mInfoWindow.open(marker);
             }
             return true;
@@ -204,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     // DB에 있는 좌표 정보들로 마커 생성
-    public void addMarkersFromDB(){
+    public void addMarkersFromDB() {
 
     }
 

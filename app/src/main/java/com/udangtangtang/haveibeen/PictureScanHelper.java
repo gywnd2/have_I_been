@@ -5,6 +5,7 @@ import android.database.Cursor;
 
 import androidx.exifinterface.media.ExifInterface;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.text.TextUtils;
@@ -31,13 +32,16 @@ public class PictureScanHelper {
         */
     public ArrayList<String> scanPictures(Context context) {
         ArrayList<String> fileList = new ArrayList<>();
-        Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         String[] projection = {MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.DISPLAY_NAME};
 
         Cursor cursor = context.getContentResolver().query(uri, projection, null, null, MediaStore.MediaColumns.DATE_ADDED + " desc");
         int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
         int columnDisplayName = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME);
         int lastIndex;
+
+        DBHelper dbHelper=new DBHelper(context);
+        SQLiteDatabase sqlDB=dbHelper.getReadableDatabase();
         while (cursor.moveToNext()) {
             String absolutePathOfImage = cursor.getString(columnIndex);
             String nameOfFile = cursor.getString(columnDisplayName);
@@ -45,9 +49,21 @@ public class PictureScanHelper {
             lastIndex = lastIndex >= 0 ? lastIndex : nameOfFile.length() - 1;
 
             if (!TextUtils.isEmpty(absolutePathOfImage)) {
-                fileList.add(absolutePathOfImage);
+                // 이미 추가된 사진인지 확인
+                String[] params=new String[]{absolutePathOfImage};
+                Cursor cursor1=sqlDB.rawQuery("select filename from myDB where filename=?;",params);
+                if(cursor1!=null&&cursor1.moveToFirst()) {
+                    // 존재하면 pass
+                    Toast.makeText(context, "이미 존재하는 이미지 : "+absolutePathOfImage, Toast.LENGTH_SHORT).show();
+                }else{
+                    // 존재하지 않으면 추가
+                    Toast.makeText(context, "존재하지 않는 이미지 : "+absolutePathOfImage, Toast.LENGTH_SHORT).show();
+                    fileList.add(absolutePathOfImage);
+                }
             }
         }
+        Toast.makeText(context, "Trying to pass fileList : "+fileList.toString(), Toast.LENGTH_LONG).show();
+        sqlDB.close();
         return fileList;
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////

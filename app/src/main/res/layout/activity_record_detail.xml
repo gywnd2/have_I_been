@@ -7,26 +7,23 @@
     tools:context=".RecordDetailActivity">
 
     <!--데이터 보기!-->
-    <ImageView
-        android:id="@+id/record_detail_image"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/record_detail_viewpager2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:scaleType="fitCenter"
-        android:src="@drawable/image" />
+        android:layout_height="300dp"/>
 
-    <View
-        android:id="@+id/viewFadingEdge"
+    <me.relex.circleindicator.CircleIndicator3
+        android:id="@+id/record_detail_image_indicator"
         android:layout_width="match_parent"
-        android:layout_height="25dp"
-        android:layout_alignBottom="@id/record_detail_image"
-        android:background="@drawable/bg_fading_edge" />
+        android:layout_height="45dp"
+        android:background="@drawable/bg_fading_edge"
+        android:layout_alignBottom="@id/record_detail_viewpager2" />
 
     <TextView
         android:id="@+id/record_detail_location_name"
         android:layout_width="wrap_content"
         android:layout_height="60dp"
-        android:layout_below="@id/record_detail_image"
+        android:layout_below="@id/record_detail_viewpager2"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
         android:text="장소명"
@@ -88,7 +85,7 @@
         android:id="@+id/record_detail_edit_location_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/record_detail_image"
+        android:layout_below="@id/record_detail_viewpager2"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
         android:includeFontPadding="false"

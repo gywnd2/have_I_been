@@ -1,6 +1,7 @@
 package com.udangtangtang.haveibeen;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -21,10 +22,11 @@ import java.util.List;
 public class RecordDetailActivity extends AppCompatActivity {
     private ActivityRecordDetailBinding binding;
     private DBHelper dbHelper;
-    private String fileName;
+    private String[] selectedLatLng;
     private ExifInterface exifInterface;
     private GeocodingHelper geocodingHelper;
     private List<Address> addressList;
+    private String firstFileName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,34 +39,40 @@ public class RecordDetailActivity extends AppCompatActivity {
 
         // MainActivity로 부터 fileName 받아오기
         Intent intent = getIntent();
-        fileName = intent.getStringExtra("fileName");
+        selectedLatLng = new String[2];
+        selectedLatLng = intent.getStringArrayExtra("selectedLatLng");
 
-        // 받아온 fileName으로 Exif 데이터 조회
-        try {
-            exifInterface = new ExifInterface(fileName);
-            // 사진 표시
-            binding.recordDetailImage.setImageURI(Uri.parse(fileName));
-        } catch (IOException e) {
-            Toast.makeText(this, "선택한 사진이 존재하지 않습니다.", Toast.LENGTH_LONG).show();
-        }
+        // 전달받은 위/경도 정보를 ViewPager 어댑터로 전달
+        binding.recordDetailViewpager2.setAdapter(new ViewPagerAdapter(this, selectedLatLng[0], selectedLatLng[1]));
+        // 가로 스크롤 설정
+        binding.recordDetailViewpager2.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
 
-        // 받아온 fileName으로 기록 조회
+        // 받아온 위/경도로 기록 조회
         SQLiteDatabase sqlDB = dbHelper.getReadableDatabase();
-        String[] columns = {dbHelper.LOCATION_NAME, dbHelper.RATING, dbHelper.COMMENT, dbHelper.LATITUDE, dbHelper.LONGTITUDE};
-        String[] params = {fileName};
-        Cursor cursor = sqlDB.query(dbHelper.TABLE_NAME, columns, dbHelper.FILE_NAME + "=?", params, null, null, null);
+        Cursor cursor = sqlDB.rawQuery("select filename, locName, rating, comment from myDB where latitude=? AND longtitude=?;", selectedLatLng);
 
         // 데이터 내용 표시
         if (cursor != null && cursor.moveToFirst()) {
+            // 같은 위/경도를 갖는 이미지 중 맨 처음 파일에 데이터 저장
+            firstFileName=cursor.getString(0);
+            // Indicator 설정
+            binding.recordDetailImageIndicator.setViewPager(binding.recordDetailViewpager2);
+            binding.recordDetailImageIndicator.createIndicators(cursor.getCount(), 0);
+
+            // 시간, 날짜 정보를 가져오기 위한 exifInterface 초기화
+            try{
+                exifInterface=new ExifInterface(firstFileName);
+            }catch(IOException e){
+
+            }
             // 지오코딩을 위한 Helper 초기화
-            geocodingHelper=new GeocodingHelper(this, cursor.getDouble(3), cursor.getDouble(4));
+            geocodingHelper = new GeocodingHelper(this, Double.valueOf(selectedLatLng[0]), Double.valueOf(selectedLatLng[1]));
             // 주소 표시
             binding.recordDetailAddress.setText(geocodingHelper.getAddress());
-
-            binding.recordDetailLocationName.setText(cursor.getString(0).equals("null") ? "'수정'을 터치하여 입력해보세요." : cursor.getString(0));
+            binding.recordDetailLocationName.setText(cursor.getString(1) == null ? "'수정'을 터치하여 입력해보세요." : cursor.getString(1));
             binding.recordDetailDatetime.setText(exifInterface.getAttribute(ExifInterface.TAG_DATETIME));
-            binding.recordDetailRating.setRating(String.valueOf(cursor.getFloat(1)).equals("null") ? (float) 0.0 : cursor.getFloat(1));
-            binding.recordDetailComment.setText(cursor.getString(2).equals("null") ? "어떤 장소였나요?" : cursor.getString(2));
+            binding.recordDetailRating.setRating(String.valueOf(cursor.getFloat(2)) == null ? (float) 0.0 : cursor.getFloat(2));
+            binding.recordDetailComment.setText(cursor.getString(3) == null ? "어떤 장소였나요?" : cursor.getString(3));
         }
 
         // DB연결 종료
@@ -104,22 +112,22 @@ public class RecordDetailActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // DB 업데이트
-                dbHelper.updateDB(fileName, binding.recordDetailEditLocationName.getText().toString(), binding.recordDetailEditRating.getRating(), binding.recordDetailEditComment.getText().toString());
+                dbHelper.updateDB(firstFileName, binding.recordDetailEditLocationName.getText().toString(), binding.recordDetailEditRating.getRating(), binding.recordDetailEditComment.getText().toString());
 
                 // 저장 되었음을 확인하기 위해 저장 시에는 다시 조회하여 출력
                 // 받아온 fileName으로 기록 조회
                 SQLiteDatabase sqlDB = dbHelper.getReadableDatabase();
                 String[] columns = {dbHelper.LOCATION_NAME, dbHelper.RATING, dbHelper.COMMENT};
-                String[] params = {fileName};
+                String[] params = {firstFileName};
                 Cursor cursor = sqlDB.query(dbHelper.TABLE_NAME, columns, dbHelper.FILE_NAME + "=?", params, null, null, null);
 
                 // 데이터 내용 표시
                 if (cursor != null && cursor.moveToFirst()) {
-                    binding.recordDetailLocationName.setText(cursor.getString(0).equals("null") ? "'수정'을 터치하여 입력해보세요." : cursor.getString(0));
+                    binding.recordDetailLocationName.setText(cursor.getString(0) == null ? "'수정'을 터치하여 입력해보세요." : cursor.getString(0));
                     binding.recordDetailAddress.setText(geocodingHelper.getAddress());
                     binding.recordDetailDatetime.setText(exifInterface.getAttribute(ExifInterface.TAG_DATETIME));
-                    binding.recordDetailRating.setRating(String.valueOf(cursor.getFloat(1)).equals("null") ? (float) 0.0 : cursor.getFloat(1));
-                    binding.recordDetailComment.setText(cursor.getString(2).equals("null") ? "어떤 장소였나요?" : cursor.getString(2));
+                    binding.recordDetailRating.setRating(String.valueOf(cursor.getFloat(1)) == null ? (float) 0.0 : cursor.getFloat(1));
+                    binding.recordDetailComment.setText(cursor.getString(2) == null ? "어떤 장소였나요?" : cursor.getString(2));
                 }
 
                 // DB연결 종료
