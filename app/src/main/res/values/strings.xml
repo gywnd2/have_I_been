@@ -24,4 +24,11 @@
 
     <string name="yes">네</string>
     <string name="no">아니오</string>
+    <string name="rank">순위</string>
+    <string name="address">주소</string>
+    <string name="count">사진 수</string>
+
+    <string name="ranking_title">많이 방문한 장소</string>
+
+    <string name="setting_title">설정</string>
 </resources>

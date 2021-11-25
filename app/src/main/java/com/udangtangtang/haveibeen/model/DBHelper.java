@@ -5,9 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.icu.text.IDNA;
-import android.media.ExifInterface;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -27,7 +26,8 @@ public class DBHelper extends SQLiteOpenHelper {
     / comment -> varchar(255)
     */
 
-    public final String TABLE_NAME="myDB";
+    public final String RECORD_TABLE_NAME ="myDB";
+    public final String ADDRESS_TABLE_NAME = "addressDB";
     public final String FILE_NAME="filename";
     public final String LOCATION_NAME="locName";
     public final String LATITUDE="latitude";
@@ -46,11 +46,13 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("create table myDB (filename varchar(255), locName varchar(255), latitude varchar(255), longtitude varchar(255), address varchar(255), date datetime, rating float, comment varchar(255));");
+        db.execSQL("create table addressDB(address varchar(255), count int)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("drop table if exists myDB;");
+        db.execSQL("drop table if exists addressDB;");
         onCreate(db);
     }
 
@@ -68,6 +70,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public void isInitialDB(){
         DBHelper myHelper = new DBHelper(mContext);
         SQLiteDatabase sqlDB = myHelper.getReadableDatabase();
+        // myDB 존재 확인
         Cursor cursor=sqlDB.rawQuery("select name from sqlite_master where type='table' AND name='myDB'", null);
         if(cursor!=null && cursor.moveToFirst()){
             // DB가 이미 존재 하므로 Pass
@@ -75,6 +78,16 @@ public class DBHelper extends SQLiteOpenHelper {
             Toast.makeText(mContext, "DB가 존재합니다.", Toast.LENGTH_SHORT).show();
             initializeDB();
         }
+
+        // addressDB 존재 확인
+        cursor=sqlDB.rawQuery("select name from sqlite_master where type='table' AND name='addressDB'", null);
+        if(cursor!=null && cursor.moveToFirst()){
+            // DB가 이미 존재 하므로 Pass
+        }else{
+            Toast.makeText(mContext, "DB가 존재합니다.", Toast.LENGTH_SHORT).show();
+            initializeDB();
+        }
+
         sqlDB.close();
     }
 
@@ -86,7 +99,7 @@ public class DBHelper extends SQLiteOpenHelper {
         contentValues.put(LOCATION_NAME, locationName);
         contentValues.put(RATING, rating);
         contentValues.put(COMMENT, comment);
-        sqlDB.update(TABLE_NAME, contentValues, FILE_NAME+"=?", new String[]{fileName});
+        sqlDB.update(RECORD_TABLE_NAME, contentValues, FILE_NAME+"=?", new String[]{fileName});
         sqlDB.close();
     }
 
@@ -95,13 +108,21 @@ public class DBHelper extends SQLiteOpenHelper {
         DBHelper myHelper = new DBHelper(mContext);
         SQLiteDatabase sqlDB = myHelper.getWritableDatabase();
 
+        // myDB에 이미지 정보 추가
         ContentValues contentValues=new ContentValues();
         contentValues.put(FILE_NAME, fileName);
         contentValues.put(LATITUDE, String.valueOf(latitude));
         contentValues.put(LONGTITUDE, String.valueOf(longtitude));
         contentValues.put(ADDRESS, address);
         contentValues.put(DATE, datetime);
-        sqlDB.insert(TABLE_NAME, null, contentValues);
+        sqlDB.insert(RECORD_TABLE_NAME, null, contentValues);
+
+        // addressDB에 주소 추가
+        contentValues=new ContentValues();
+        contentValues.put("address", address);
+        contentValues.put("count", 0);
+        sqlDB.insert(ADDRESS_TABLE_NAME, null, contentValues);
+
         sqlDB.close();
         Log.i(TAG, "Image file inserted to DB : "+fileName+" latitude : "+String.valueOf(latitude)+" longtitude : "+String.valueOf(longtitude)+" address : "+address+" datetime : "+datetime);
     }
@@ -189,7 +210,7 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase sqlDB = dbHelper.getReadableDatabase();
         String[] columns = {dbHelper.FILE_NAME,dbHelper.LOCATION_NAME, dbHelper.RATING, dbHelper.COMMENT};
         String[] params = {filename};
-        Cursor cursor = sqlDB.query(dbHelper.TABLE_NAME, columns, dbHelper.FILE_NAME + "=?", params, null, null, null);
+        Cursor cursor = sqlDB.query(dbHelper.RECORD_TABLE_NAME, columns, dbHelper.FILE_NAME + "=?", params, null, null, null);
 
         // 데이터 내용 표시
         if (cursor != null && cursor.moveToFirst()) {
@@ -202,6 +223,21 @@ public class DBHelper extends SQLiteOpenHelper {
         // DB연결 종료
         sqlDB.close();
         return recordData;
+    }
+
+    // 모든 주소 정보 리턴
+    public ArrayList<String> getAllAddressInDB() {
+        DBHelper myHelper = new DBHelper(mContext);
+        SQLiteDatabase sqlDB = myHelper.getWritableDatabase();
+        ArrayList<String> addressList=new ArrayList<>();
+        Cursor cursor;
+        cursor = sqlDB.rawQuery("select * from addressDB;", null);
+
+        while (cursor.moveToNext()) {
+            addressList.add(cursor.getString(0));
+        }
+
+        return addressList;
     }
 
     // 모든 데이터 출력

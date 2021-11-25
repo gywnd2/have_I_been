@@ -34,6 +34,7 @@ import com.naver.maps.map.util.FusedLocationSource;
 import com.udangtangtang.haveibeen.databinding.ActivityMainBinding;
 import com.udangtangtang.haveibeen.model.DBHelper;
 import com.udangtangtang.haveibeen.model.InfoWindowData;
+import com.udangtangtang.haveibeen.util.BackKeyDoubleTabHandler;
 import com.udangtangtang.haveibeen.util.PermissionHelper;
 import com.udangtangtang.haveibeen.util.PictureScanHelper;
 
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String[] selectedLatLng;
     private PictureScanHelper pictureScanHelper;
     private InfoWindowData infoWindowData;
+    private BackKeyDoubleTabHandler backKeyDoubleTabHandler;
 
     private static final String TAG = "MainActivity";
 
@@ -73,6 +75,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        setTitle("가봤을지도?");
+
+        // 뒤로가기 이벤트
+//        backKeyDoubleTabHandler=new BackKeyDoubleTabHandler((MainActivity)getApplicationContext());
 
         // 외부 저장소 권한 요청
         PermissionHelper.checkPermission(this, READ_EXTERNAL_STORAGE, REQ_PERMISSION_CALLBACK);
@@ -107,14 +113,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        // Floating Button (Camera), 클릭 시 카메라 실행
-//        binding.mainFabCamera.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent=new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//                startActivity(intent);
-//            }
-//        });
+//         Floating Button (Ranking), 클릭 시 랭킹 액티비티 전환
+        binding.mainFabRanking.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(getApplicationContext(), RankingActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     @UiThread
@@ -233,5 +239,5 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    // DB 초기화나 사진 재스캔 시 액티비티 다시 시작
+
 }
