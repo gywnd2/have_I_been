@@ -13,6 +13,7 @@ import android.location.Address;
 import android.media.ExifInterface;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import android.widget.Toast;
 
 import com.udangtangtang.haveibeen.databinding.ActivityRecordDetailBinding;
@@ -60,6 +61,9 @@ public class RecordDetailActivity extends AppCompatActivity {
 
         // 데이터 가져오기
         recordData= dbHelper.getRecordData(firstFileName);
+
+        // 액티비티 타이틀 설정
+        setTitle(recordData.getLocationName() == null ? getApplicationContext().getResources().getString(R.string.record_detail_no_locName) : recordData.getLocationName());
 
         // Indicator 설정
         binding.recordDetailImageIndicator.setViewPager(binding.recordDetailViewpager2);

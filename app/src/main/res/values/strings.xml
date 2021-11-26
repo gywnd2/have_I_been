@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">haveibeen</string>
+    <string name="app_name">가봤을지도?</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
@@ -31,4 +31,7 @@
     <string name="ranking_title">많이 방문한 장소</string>
 
     <string name="setting_title">설정</string>
+    <string name="Edit">수정</string>
+    <string name="Save">저장</string>
+    <string name="credit">가봤을지도?\n\'21-2학기 모바일 앱 개발\n 중앙대학교 융합공학부 디지털이미징전공\n 20172979 이효중</string>
 </resources>

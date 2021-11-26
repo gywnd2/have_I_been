@@ -34,7 +34,6 @@ import com.naver.maps.map.util.FusedLocationSource;
 import com.udangtangtang.haveibeen.databinding.ActivityMainBinding;
 import com.udangtangtang.haveibeen.model.DBHelper;
 import com.udangtangtang.haveibeen.model.InfoWindowData;
-import com.udangtangtang.haveibeen.util.BackKeyDoubleTabHandler;
 import com.udangtangtang.haveibeen.util.PermissionHelper;
 import com.udangtangtang.haveibeen.util.PictureScanHelper;
 
@@ -57,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String[] selectedLatLng;
     private PictureScanHelper pictureScanHelper;
     private InfoWindowData infoWindowData;
-    private BackKeyDoubleTabHandler backKeyDoubleTabHandler;
+    private long backKeyTime=0;
 
     private static final String TAG = "MainActivity";
 
@@ -77,14 +76,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(binding.getRoot());
         setTitle("가봤을지도?");
 
-        // 뒤로가기 이벤트
-//        backKeyDoubleTabHandler=new BackKeyDoubleTabHandler((MainActivity)getApplicationContext());
-
         // 외부 저장소 권한 요청
         PermissionHelper.checkPermission(this, READ_EXTERNAL_STORAGE, REQ_PERMISSION_CALLBACK);
 
         // 권한이 있다면 DB 초기화 및 사진 스캔
-        // TODO : 이미지가 많을 경우 Thread로 구현?
         if (isPermissionGranted(this, READ_EXTERNAL_STORAGE)) {
             // DB 연결 및 초기화
             dbHelper = new DBHelper(this);
@@ -234,10 +229,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         return false;
     }
 
-    // DB에 있는 좌표 정보들로 마커 생성
-    public void addMarkersFromDB() {
+    // 뒤로가기 이벤트
+    @Override
+    public void onBackPressed() {
+        if(System.currentTimeMillis()>backKeyTime+2000){
+            backKeyTime=System.currentTimeMillis();
+            Toast.makeText(this, "뒤로가기를 한번 더 누르면 종료됩니다.", Toast.LENGTH_LONG).show();
+            return;
+        }
 
+        if(System.currentTimeMillis()<=backKeyTime+2000){
+            this.finish();
+        }
     }
-
 
 }

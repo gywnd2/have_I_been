@@ -56,7 +56,6 @@ public class RankingActivity extends AppCompatActivity {
         }
 
         // 정렬
-        // https://ponyozzang.tistory.com/404
         // Map.Entry 리스트 작성
         List<Entry<String, Integer>> list_entries = new ArrayList<Entry<String, Integer>>(map.entrySet());
 
@@ -69,12 +68,8 @@ public class RankingActivity extends AppCompatActivity {
             }
         });
 
-        map.clear();
-
         // 누적하여 String에 추가
-
         for(Entry<String, Integer> entry : list_entries){
-            Log.i("test", entry.getKey()+"!!!!!!!"+entry.getValue());
             rank+=String.valueOf(rankNum)+System.lineSeparator();
             rank+="---"+System.lineSeparator();
             rankNum++;
@@ -85,11 +80,6 @@ public class RankingActivity extends AppCompatActivity {
             map.put(entry.getKey(), entry.getValue());
         }
 
-//        for(int i=0; i<addressList.size(); i++){
-//            rank+=String.valueOf(map.get(addressList.get(i)))+System.lineSeparator();
-//            Log.i("imageDB", addressList.get(i)+"!!!!! "+map.get(addressList.get(i)));
-//        }
-//        Log.i("imageDB", "최종결과 : "+rank+"개수 "+addr);
         binding.rankingContentRank.setText(rank);
         binding.rankingContentCount.setText(count);
         binding.rankingContentCity.setText(addr);

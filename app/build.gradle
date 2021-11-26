@@ -51,6 +51,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.10.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
 
-    // Circleindicator3 : https://github.com/ongakuer/CircleIndicator
+    // Circleindicator3
+    // https://github.com/ongakuer/CircleIndicator
     implementation 'me.relex:circleindicator:2.1.6'
 }
