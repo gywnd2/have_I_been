@@ -12,19 +12,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 public class DBHelper extends SQLiteOpenHelper {
-    private final static String TAG="imageDB";
     private Context mContext;
-
-    /* DB Structure
-    / filename -> varchar(255)
-    / locName -> varchar(255)
-    / latitude -> double
-    / longtitude -> double
-    / address -> varchar(255)
-    / date -> datetime
-    / rating -> float
-    / comment -> varchar(255)
-    */
 
     public final String RECORD_TABLE_NAME ="myDB";
     public final String ADDRESS_TABLE_NAME = "addressDB";
@@ -63,7 +51,6 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase sqlDB = myHelper.getWritableDatabase();
         myHelper.onUpgrade(sqlDB, 1, 2);
         sqlDB.close();
-        Toast.makeText(mContext, "DB 초기화 됨", Toast.LENGTH_LONG).show();
     }
 
     // DB가 존재하는 지 확인하고 없을 때만 DB 초기화
@@ -75,7 +62,6 @@ public class DBHelper extends SQLiteOpenHelper {
         if(cursor!=null && cursor.moveToFirst()){
             // DB가 이미 존재 하므로 Pass
         }else{
-            Toast.makeText(mContext, "DB가 존재합니다.", Toast.LENGTH_SHORT).show();
             initializeDB();
         }
 
@@ -84,7 +70,6 @@ public class DBHelper extends SQLiteOpenHelper {
         if(cursor!=null && cursor.moveToFirst()){
             // DB가 이미 존재 하므로 Pass
         }else{
-            Toast.makeText(mContext, "DB가 존재합니다.", Toast.LENGTH_SHORT).show();
             initializeDB();
         }
 
@@ -124,8 +109,7 @@ public class DBHelper extends SQLiteOpenHelper {
         sqlDB.insert(ADDRESS_TABLE_NAME, null, contentValues);
 
         sqlDB.close();
-        Log.i(TAG, "Image file inserted to DB : "+fileName+" latitude : "+String.valueOf(latitude)+" longtitude : "+String.valueOf(longtitude)+" address : "+address+" datetime : "+datetime);
-    }
+      }
 
     // 좌표가 있는 이미지 리스트 개수 반환
     public int getSizeOfPictureDB(){
@@ -135,7 +119,6 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase sqlDB = myHelper.getWritableDatabase();
         cursor=sqlDB.rawQuery("select count(filename) from myDB;", null);
         while(cursor.moveToNext()){
-            Log.d("dbCount", String.valueOf(cursor.getInt(0)));
             result=cursor.getInt(0);
         }
         sqlDB.close();
@@ -154,10 +137,8 @@ public class DBHelper extends SQLiteOpenHelper {
         cursor = sqlDB.rawQuery("select filename from myDB where latitude=? AND longtitude=?;", params);
         if(cursor!=null && cursor.moveToFirst()){
             // 1회 실행 후 while에서 moveToNext()
-            Log.i("test", "Adding same location pictures : "+cursor.getString(0));
             sameLocationPictures.add(cursor.getString(0));
             while(cursor.moveToNext()){
-                Log.i("test", "Adding same location pictures : "+cursor.getString(0));
                 sameLocationPictures.add(cursor.getString(0));
             }
         }
@@ -249,7 +230,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
         if(cursor.getCount() == 0) {
             //show message
-            Log.i("test", "there is no data.");
             return;
 
         }

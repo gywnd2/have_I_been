@@ -31,10 +31,10 @@ public class RecordDetailActivity extends AppCompatActivity {
     private String[] selectedLatLng;
     private ExifInterface exifInterface;
     private GeocodingHelper geocodingHelper;
-    private List<Address> addressList;
     private String firstFileName;
-    private AlertDialog.Builder builder;
     private AlertDialog dialog;
+    private List<Address> addressList;
+    private AlertDialog.Builder builder;
     private RecordData recordData;
 
     @Override
@@ -63,7 +63,7 @@ public class RecordDetailActivity extends AppCompatActivity {
         recordData= dbHelper.getRecordData(firstFileName);
 
         // 액티비티 타이틀 설정
-        setTitle(recordData.getLocationName() == null ? getApplicationContext().getResources().getString(R.string.record_detail_no_locName) : recordData.getLocationName());
+        setTitle(recordData.getLocationName() == null ? getString(R.string.record_detail_no_locName) : recordData.getLocationName());
 
         // Indicator 설정
         binding.recordDetailImageIndicator.setViewPager(binding.recordDetailViewpager2);
@@ -79,10 +79,10 @@ public class RecordDetailActivity extends AppCompatActivity {
         geocodingHelper = new GeocodingHelper(this, Double.valueOf(selectedLatLng[0]), Double.valueOf(selectedLatLng[1]));
         // 주소 표시
         binding.recordDetailAddress.setText(geocodingHelper.getAddress());
-        binding.recordDetailLocationName.setText(recordData.getLocationName() == null ? getApplicationContext().getResources().getString(R.string.record_detail_no_locName) : recordData.getLocationName());
+        binding.recordDetailLocationName.setText(recordData.getLocationName() == null ? getString(R.string.record_detail_no_locName) : recordData.getLocationName());
         binding.recordDetailDatetime.setText(exifInterface.getAttribute(ExifInterface.TAG_DATETIME));
         binding.recordDetailRating.setRating(recordData.getRating() == 0.0 ? (float) 0.0 : recordData.getRating());
-        binding.recordDetailComment.setText(recordData.getComment() == null ? getApplicationContext().getResources().getString(R.string.record_detail_no_comment) : recordData.getComment());
+        binding.recordDetailComment.setText(recordData.getComment() == null ? getString(R.string.record_detail_no_comment) : recordData.getComment());
 
         // DB연결 종료
 
@@ -151,7 +151,7 @@ public class RecordDetailActivity extends AppCompatActivity {
                                 binding.recordDetailComment.setVisibility(View.VISIBLE);
                                 binding.recordDetailButtonEdit.setVisibility(View.VISIBLE);
 
-                                Toast.makeText(getApplicationContext(), "저장했습니다.", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), getString(R.string.saved), Toast.LENGTH_LONG).show();
                             }
                         })
                         .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {

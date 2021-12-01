@@ -30,7 +30,7 @@ public class SettingActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         // Title 설정
-        setTitle("설정");
+        setTitle(R.string.setting_title);
 
         pictureScanHelper=new PictureScanHelper(this);
         dbHelper=new DBHelper(getApplicationContext());
