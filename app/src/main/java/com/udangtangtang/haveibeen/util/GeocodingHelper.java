@@ -27,6 +27,7 @@ public class GeocodingHelper {
         address=new String[4];
         addressList = null;
         try {
+            // Geocoder를 통해 주소 획득
             addressList = geocoder.getFromLocation(latitude, longtitude, 10);
         } catch (
                 IOException e) {
@@ -48,6 +49,9 @@ public class GeocodingHelper {
     public String getAddress() {
         String result="";
         for(int i=0; i<4; i++){
+            // null을 건너 뛰고 각 단위를 이어 붙임
+            // ex) 경기도 광명시 null 일직동 => 경기도 광명시 일직동
+            //     경기도 안양시 만안구 석수2동 과 달리 구 단위가 없기 때문
             if(address[i]!=null){
                 result+=address[i];
                 if(i!=3){ result+=" "; }

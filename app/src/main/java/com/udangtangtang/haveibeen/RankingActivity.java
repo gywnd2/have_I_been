@@ -37,7 +37,7 @@ public class RankingActivity extends AppCompatActivity {
         SQLiteDatabase sqlDB=dbHelper.getReadableDatabase();
         Cursor cursor =sqlDB.rawQuery("select * from addressDB", null);
 
-        // 주소 DB를 받아올 ArrayList 초기화
+        // 주소 DB를 받아올 ArrayList 초기화, TextView로 출력할 string 초기화
         rank="---"+System.lineSeparator(); count ="----"+System.lineSeparator(); addr="-------------------------------------------"+System.lineSeparator();
         addressList=new ArrayList<>();
         if(cursor.moveToFirst()){
@@ -80,6 +80,7 @@ public class RankingActivity extends AppCompatActivity {
             map.put(entry.getKey(), entry.getValue());
         }
 
+        // TextView에 표시
         binding.rankingContentRank.setText(rank);
         binding.rankingContentCount.setText(count);
         binding.rankingContentCity.setText(addr);

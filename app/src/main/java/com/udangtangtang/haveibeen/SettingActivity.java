@@ -30,7 +30,7 @@ public class SettingActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         // Title 설정
-        setTitle("설정");
+        setTitle(R.string.setting_title);
 
         pictureScanHelper=new PictureScanHelper(this);
         dbHelper=new DBHelper(getApplicationContext());
@@ -38,6 +38,7 @@ public class SettingActivity extends AppCompatActivity {
         binding.settingButtonInitDb.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 // 확인 창
                 builder=new AlertDialog.Builder(SettingActivity.this);
                 builder.setTitle(R.string.setting_alert_title_db_init)
@@ -45,6 +46,7 @@ public class SettingActivity extends AppCompatActivity {
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                // DB 초기화
                                 dbHelper.initializeDB();
                                 restartApp();
                             }
@@ -52,9 +54,10 @@ public class SettingActivity extends AppCompatActivity {
                         .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-
+                                // 아무 작업도 하지 않음
                             }
                         });
+                // 확인 창 표시
                 dialog=builder.create();
                 builder.show();
 
@@ -71,6 +74,7 @@ public class SettingActivity extends AppCompatActivity {
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                // 사진 탐색
                                 pictureScanHelper.scanPictures(getApplicationContext());
                                 restartApp();
                             }
@@ -78,9 +82,10 @@ public class SettingActivity extends AppCompatActivity {
                         .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-
+                                // 아무 작업도 하지 않음
                             }
                         });
+                // 확인 창 표시
                 dialog=builder.create();
                 builder.show();
             }
@@ -93,7 +98,7 @@ public class SettingActivity extends AppCompatActivity {
         Intent intent=packageManager.getLaunchIntentForPackage(getPackageName());
         ComponentName componentName=intent.getComponent();
         Intent mIntent=Intent.makeRestartActivityTask(componentName);
-        startActivity(mIntent);
+        startActivity(mIntent) ;
         System.exit(0);
     }
 }

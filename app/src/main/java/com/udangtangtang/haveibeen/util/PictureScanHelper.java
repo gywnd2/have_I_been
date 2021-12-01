@@ -7,15 +7,16 @@ import androidx.exifinterface.media.ExifInterface;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.udangtangtang.haveibeen.model.DBHelper;
-import com.udangtangtang.haveibeen.util.GeocodingHelper;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 public class PictureScanHelper {
@@ -78,20 +79,40 @@ public class PictureScanHelper {
         for (int i = 0; i < fileList.size(); i++) {
             try {
                 // 위/경도, 일시, 주소 얻기
-                exifInterface = new ExifInterface(fileList.get(i));
-                latLong = exifInterface.getLatLong();
-                datetime = exifInterface.getAttribute(android.media.ExifInterface.TAG_DATETIME);
+                // Android Q 이상의 경우 위치 정보가 사진에 직접적으로 담겨 있지 않음
+                // Q이상 일 경우
+                if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.Q){
+                    Uri photoUri = MediaStore.setRequireOriginal(Uri.parse(fileList.get(i)));
+                    InputStream stream = context.getContentResolver().openInputStream(photoUri);
+                    if (stream != null) {
+                        ExifInterface exifInterface = new ExifInterface(stream);
+                        latLong = exifInterface.getLatLong();
+                        datetime = exifInterface.getAttribute(android.media.ExifInterface.TAG_DATETIME);
+                        stream.close();
+                    } else {
+                        latLong = new double[2];
+                        datetime = exifInterface.getAttribute(android.media.ExifInterface.TAG_DATETIME);
+                    }
+                    // Q 이전 버전일 경우
+                }else{
+                    exifInterface = new ExifInterface(fileList.get(i));
+                    latLong = exifInterface.getLatLong();
+                    datetime = exifInterface.getAttribute(android.media.ExifInterface.TAG_DATETIME);
+                }
             } catch (IOException e) {
                 System.out.println(e.toString());
             }
             try {
+                // 좌표 정보를 통해 주소를 얻고 이를 파일명, 위/경도 정보, 촬영 일시 등을 모두 DB에 추가
                 geocodingHelper = new GeocodingHelper(context, latLong[0], latLong[1]);
                 address = geocodingHelper.getAddress();
                 dbHelper.insertImageToDB(fileList.get(i), latLong[0], latLong[1], address, datetime);
+                Log.i(TAG, "Image " + fileList.get(i) + address);
                 newPictureCount += 1;
             } catch (NullPointerException e) {
                 // 좌표 정보가 없을 경우
                 Log.i(TAG, "Image " + fileList.get(i) + " has no coordination info.");
+                // 좌표 정보 없는 사진 개수 count
                 noLatLngCount += 1;
             }
         }

@@ -58,8 +58,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private InfoWindowData infoWindowData;
     private long backKeyTime=0;
 
-    private static final String TAG = "MainActivity";
-
     private static final int PERMISSION_REQUEST_CODE = 100;
     private static final String[] PERMISSIONS = {
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -74,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        setTitle("가봤을지도?");
+        setTitle(R.string.app_name);
 
         // 외부 저장소 권한 요청
         PermissionHelper.checkPermission(this, READ_EXTERNAL_STORAGE, REQ_PERMISSION_CALLBACK);
@@ -163,10 +161,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 // 가져온 데이터로 뷰 만들기
                 View view = View.inflate(MainActivity.this, R.layout.marker_infowindow, null);
 
-                ((TextView) view.findViewById(R.id.infoWindow_locationTitle)).setText(infoWindowData.getLocationName() == null ? getApplicationContext().getResources().getString(R.string.record_detail_no_locName) : infoWindowData.getLocationName());
-                ((TextView) view.findViewById(R.id.infoWindow_locationAddress)).setText(infoWindowData.getAddress()==null ? "위치 정보가 없습니다." : infoWindowData.getAddress());
-                ((TextView) view.findViewById(R.id.infoWindow_datetime)).setText(infoWindowData.getDatetime() == null ? "시간/날짜 정보가 없습니다." : infoWindowData.getDatetime());
-                ((TextView) view.findViewById(R.id.infoWindow_comment)).setText(infoWindowData.getComment() == null ? getApplicationContext().getResources().getString(R.string.record_detail_no_comment) : infoWindowData.getComment());
+                ((TextView) view.findViewById(R.id.infoWindow_locationTitle)).setText(infoWindowData.getLocationName() == null ? getString(R.string.record_detail_no_locName) : infoWindowData.getLocationName());
+                ((TextView) view.findViewById(R.id.infoWindow_locationAddress)).setText(infoWindowData.getAddress()==null ? getString(R.string.no_location_info) : infoWindowData.getAddress());
+                ((TextView) view.findViewById(R.id.infoWindow_datetime)).setText(infoWindowData.getDatetime() == null ? getString(R.string.no_datetime_info) : infoWindowData.getDatetime());
+                ((TextView) view.findViewById(R.id.infoWindow_comment)).setText(infoWindowData.getComment() == null ? getString(R.string.record_detail_no_comment) : infoWindowData.getComment());
                 ((RatingBar) view.findViewById(R.id.infoWindow_ratingBar)).setRating(infoWindowData.getRating() == 0.0 ? (float) 0.0 : infoWindowData.getRating());
 
                 return view;
@@ -234,7 +232,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onBackPressed() {
         if(System.currentTimeMillis()>backKeyTime+2000){
             backKeyTime=System.currentTimeMillis();
-            Toast.makeText(this, "뒤로가기를 한번 더 누르면 종료됩니다.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.backkeypressed), Toast.LENGTH_LONG).show();
             return;
         }
 
