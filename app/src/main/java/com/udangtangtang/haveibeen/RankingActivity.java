@@ -68,7 +68,7 @@ public class RankingActivity extends AppCompatActivity {
             }
         });
 
-        // 누적하여 String에 추가
+        // 누적하여 String에 추가=
         for(Entry<String, Integer> entry : list_entries){
             rank+=String.valueOf(rankNum)+System.lineSeparator();
             rank+="---"+System.lineSeparator();
