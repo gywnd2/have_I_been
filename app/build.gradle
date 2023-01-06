@@ -1,11 +1,11 @@
-Properties properties=new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
-def naver_map_client_id=properties.getProperty('naver.map.client_id')
-
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
 }
+
+Properties properties=new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+def naver_map_client_id=properties.getProperty('naver.map.client_id')
 
 android {
     compileSdk 33

@@ -1,36 +1,3 @@
-# Ignore Gradle GUI config
-gradle-app.setting
-
-# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
-!gradle-wrapper.jar
-
-# Cache of project
-.gradletasknamecache
-
-*.iml
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-.gradle
-/build
-local.properties
-/captures
-.externalNativeBuild
-.cxx
-credentials.json
-/caches
-/kotlin-profile
-/native
-/wrapper
-/daemon
-
-android.lock
-
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
 
@@ -42,6 +9,7 @@ android.lock
 .gradle/
 build/
 
+#h
 # Local configuration file (sdk path, etc)
 local.properties
 
