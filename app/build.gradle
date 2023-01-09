@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
 }
 
 Properties properties=new Properties()
@@ -63,4 +64,9 @@ dependencies {
     // Circleindicator3
     // https://github.com/ongakuer/CircleIndicator
     implementation 'me.relex:circleindicator:2.1.6'
+
+    def room_version="2.4.3"
+    implementation "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+
 }

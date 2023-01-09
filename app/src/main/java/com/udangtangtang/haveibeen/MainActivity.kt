@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
     private lateinit var dbHelper: DBHelper
     private lateinit var fileList: ArrayList<String>
     private lateinit var markers: Array<Marker?>
-    private lateinit var selectedLatLng: Array<String>
+    private lateinit var selectedLatLng: Array<String?>
     private lateinit var pictureScanHelper: PictureScanHelper
     private lateinit var infoWindowData: InfoWindowData
     private var backKeyTime: Long = 0
@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         if (PermissionHelper.isPermissionGranted(this, permission.READ_EXTERNAL_STORAGE)) {
             // DB 연결 및 초기화
             dbHelper = DBHelper(this)
-            dbHelper!!.isInitialDB()
+            dbHelper.isInitialDB
 
             // 사진 스캔
             pictureScanHelper = PictureScanHelper(this)
@@ -142,17 +142,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                 // 가져온 데이터로 뷰 만들기
                 val view = View.inflate(this@MainActivity, R.layout.marker_infowindow, null)
                 (view.findViewById<View>(R.id.infoWindow_locationTitle) as TextView).text =
-                    if (infoWindowData.getLocationName() == null) getString(R.string.record_detail_no_locName) else infoWindowData.getLocationName()
+                    if (infoWindowData.locationName == null) getString(R.string.record_detail_no_locName) else infoWindowData.locationName
                 (view.findViewById<View>(R.id.infoWindow_locationAddress) as TextView).text =
-                    if (infoWindowData.getAddress() == null) getString(R.string.no_location_info) else infoWindowData.getAddress()
+                    if (infoWindowData.address == null) getString(R.string.no_location_info) else infoWindowData.address
                 (view.findViewById<View>(R.id.infoWindow_datetime) as TextView).text =
-                    if (infoWindowData.getDatetime() == null) getString(R.string.no_datetime_info) else infoWindowData.getDatetime()
+                    if (infoWindowData.datetime == null) getString(R.string.no_datetime_info) else infoWindowData.datetime
                 (view.findViewById<View>(R.id.infoWindow_comment) as TextView).text =
-                    if (infoWindowData.getComment() == null) getString(R.string.record_detail_no_comment) else infoWindowData.getComment()
+                    if (infoWindowData.comment == null) getString(R.string.record_detail_no_comment) else infoWindowData.comment
                 (view.findViewById<View>(R.id.infoWindow_ratingBar) as RatingBar).rating =
-                    if (infoWindowData.getRating()
+                    if (infoWindowData.rating
                             .toDouble() == 0.0
-                    ) 0.0.toFloat() else infoWindowData.getRating()
+                    ) 0.0.toFloat() else infoWindowData.rating
                 return view
             }
         }
