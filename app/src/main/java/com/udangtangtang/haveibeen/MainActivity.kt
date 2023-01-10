@@ -35,6 +35,8 @@ import com.naver.maps.map.LocationTrackingMode
 import android.widget.Toast
 import com.naver.maps.map.overlay.Marker
 import com.udangtangtang.haveibeen.databinding.ActivityMainBinding
+import com.udangtangtang.haveibeen.model.PictureDao
+import com.udangtangtang.haveibeen.model.PictureData
 import java.util.ArrayList
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickListener {
@@ -43,12 +45,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
     private lateinit var mNaverMap: NaverMap
     private lateinit var uiSettings: UiSettings
     private lateinit var mInfoWindow: InfoWindow
-    private lateinit var dbHelper: DBHelper
     private lateinit var fileList: ArrayList<String>
     private lateinit var markers: Array<Marker?>
     private lateinit var selectedLatLng: Array<String?>
     private lateinit var pictureScanHelper: PictureScanHelper
-    private lateinit var infoWindowData: InfoWindowData
     private var backKeyTime: Long = 0
     private var dbSize = 0
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,6 +67,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         // 권한이 있다면 DB 초기화 및 사진 스캔
         if (PermissionHelper.isPermissionGranted(this, permission.READ_EXTERNAL_STORAGE)) {
             // DB 연결 및 초기화
+            PictureDao.
             dbHelper = DBHelper(this)
             dbHelper.isInitialDB
 

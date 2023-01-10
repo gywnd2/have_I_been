@@ -1,7 +1,6 @@
 package com.udangtangtang.haveibeen.util
 
 import android.content.*
-import com.udangtangtang.haveibeen.model.DBHelper
 import android.widget.Toast
 import android.os.Build
 import android.net.Uri
@@ -15,15 +14,11 @@ import java.util.ArrayList
 
 class PictureScanHelper(private val context: Context) {
     private val TAG = "pictureManager"
-    private var exifInterface: ExifInterface? = null
-    private var geocodingHelper: GeocodingHelper? = null
+    private lateinit var exifInterface: ExifInterface
+    private lateinit var geocodingHelper: GeocodingHelper
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    /*
-        /  사진 파일 리스트
-        /  https://3001ssw.tistory.com/195
-        */
-    fun scanPictures(context: Context): ArrayList<String> {
+    fun scanPictures(): ArrayList<String> {
+
         val fileList = ArrayList<String>()
         val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         val projection = arrayOf(MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.DISPLAY_NAME)
@@ -33,32 +28,28 @@ class PictureScanHelper(private val context: Context) {
             null,
             null,
             MediaStore.MediaColumns.DATE_ADDED + " desc"
-        )
-        val columnIndex = cursor!!.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA)
-        val columnDisplayName = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
-        var lastIndex: Int
-        val dbHelper = DBHelper(context)
-        val sqlDB = dbHelper.readableDatabase
-        while (cursor.moveToNext()) {
-            val absolutePathOfImage = cursor.getString(columnIndex)
-            val nameOfFile = cursor.getString(columnDisplayName)
-            lastIndex = absolutePathOfImage.lastIndexOf(nameOfFile)
-            lastIndex = if (lastIndex >= 0) lastIndex else nameOfFile.length - 1
-            if (!TextUtils.isEmpty(absolutePathOfImage)) {
-                // 이미 추가된 사진인지 확인
-                val params = arrayOf(absolutePathOfImage)
-                val cursor1 = sqlDB.rawQuery("select filename from myDB where filename=?;", params)
-                if (cursor1 != null && cursor1.moveToFirst()) {
-                    // 존재하면 pass
-                } else {
-                    // 존재하지 않으면 추가
-                    fileList.add(absolutePathOfImage)
-                }
+        )?.use{ cursor ->
+            while (cursor.moveToNext()){
+                val absolutePathOfImage = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
+                val nameOfFile = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME))
+                var lastIdx:Int =absolutePathOfImage.lastIndexOf(nameOfFile)
+                lastIdx=if(lastIdx>=0) lastIdx else nameOfFile.length-1
+                // TODO : Use Room
+//                if (!TextUtils.isEmpty(absolutePathOfImage)) {
+//                    // 이미 추가된 사진인지 확인
+//                    val params = arrayOf(absolutePathOfImage)
+//                    val cursor1 = sqlDB.rawQuery("select filename from myDB where filename=?;", params)
+//                    if (cursor1 != null && cursor1.moveToFirst()) {
+//                        // 존재하면 pass
+//                    } else {
+//                        // 존재하지 않으면 추가
+//                        fileList.add(absolutePathOfImage)
+//                    }
+//                }
             }
+
         }
-        sqlDB.close()
-        return fileList
-    }
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     fun initializePictureDB(dbHelper: DBHelper, fileList: ArrayList<String>) {

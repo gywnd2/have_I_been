@@ -4,8 +4,6 @@ import android.content.*
 import android.database.sqlite.SQLiteOpenHelper
 import android.database.sqlite.SQLiteDatabase
 import com.udangtangtang.haveibeen.model.DBHelper
-import com.udangtangtang.haveibeen.model.InfoWindowData
-import com.udangtangtang.haveibeen.model.RecordData
 import android.location.Geocoder
 import android.widget.Toast
 import android.os.Build
