@@ -1,53 +1,36 @@
 package com.udangtangtang.haveibeen.util
 
 import android.content.*
-import android.database.sqlite.SQLiteOpenHelper
-import android.database.sqlite.SQLiteDatabase
-import com.udangtangtang.haveibeen.model.DBHelper
 import android.location.Geocoder
 import android.widget.Toast
-import android.os.Build
-import android.content.pm.PackageManager
 import android.location.Address
-import androidx.core.content.ContextCompat
-import com.udangtangtang.haveibeen.util.PermissionHelper
-import androidx.core.app.ActivityCompat
-import com.udangtangtang.haveibeen.MainActivity
-import androidx.recyclerview.widget.RecyclerView
-import com.udangtangtang.haveibeen.util.ViewPagerAdapter.ViewHolderPage
-import android.view.ViewGroup
-import android.view.LayoutInflater
-import com.udangtangtang.haveibeen.R
-import com.bumptech.glide.Glide
-import com.udangtangtang.haveibeen.util.GeocodingHelper
-import android.provider.MediaStore
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import com.udangtangtang.haveibeen.util.ViewPagerAdapter
+import android.util.Log
 import androidx.viewpager2.widget.ViewPager2
+import com.bumptech.glide.Glide.init
 import com.udangtangtang.haveibeen.util.PictureScanHelper
 import java.io.IOException
 
-class GeocodingHelper(private val context: Context, latitude: Double, longtitude: Double) {
-    private val geocoder: Geocoder
-    private var addressList: List<Address>?
+class GeocodingHelper(private val context: Context) {
+    private lateinit var geocoder: Geocoder
+    private var addressList= mutableListOf<Address>()?
 
     // AdminArea -> 특별, 광역시/도
     // Locality -> 시
     // SubLocality -> 구 (특별 / 광역시의 구 포함)
     // Thoroughfare -> 읍/면/동/로
-    private val address: Array<String?>
-
     init {
-
         // 역 지오코딩
         geocoder = Geocoder(context)
-        address = arrayOfNulls(4)
-        addressList = null
+
+
+    }
+
+    fun getAddress(latLngList:List<>): String? {
         try {
             // Geocoder를 통해 주소 획득
             addressList = geocoder.getFromLocation(latitude, longtitude, 10)
         } catch (e: IOException) {
+            Log.d("Geocoder", e.printStackTrace().toString())
         }
         if (addressList != null) {
             if (addressList.size == 0) {
@@ -59,9 +42,7 @@ class GeocodingHelper(private val context: Context, latitude: Double, longtitude
                 address[3] = addressList.get(0).thoroughfare
             }
         }
-    }
 
-    fun getAddress(): String? {
         var result: String? = ""
         for (i in 0..3) {
             // null을 건너 뛰고 각 단위를 이어 붙임

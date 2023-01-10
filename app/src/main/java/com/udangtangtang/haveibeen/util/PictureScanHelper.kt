@@ -22,6 +22,7 @@ class PictureScanHelper(private val context: Context) {
     private lateinit var geocodingHelper: GeocodingHelper
     private lateinit var pictureDB:PictureDatabase
 
+
     fun scanPictures(): ArrayList<String> {
 
         val fileList = ArrayList<String>()
@@ -44,6 +45,49 @@ class PictureScanHelper(private val context: Context) {
                     val picture=PictureEntity(absolutePathOfImage, null, null,null)
                     pictureList.add(picture)
 
+                    for (picture in pictureList.indices) {
+                        try {
+                            // 위/경도, 일시, 주소 얻기
+                            // Android Q 이상의 경우 위치 정보가 사진에 직접적으로 담겨 있지 않음
+                            // Q이상 일 경우
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                val photoUri = MediaStore.setRequireOriginal(Uri.parse(picture.))
+                                val stream = context.contentResolver.openInputStream(photoUri)
+                                if (stream != null) {
+                                    val exifInterface = ExifInterface(stream)
+                                    latLong = exifInterface.latLong
+                                    datetime =
+                                        exifInterface.getAttribute(android.media.ExifInterface.TAG_DATETIME)
+                                    stream.close()
+                                } else {
+                                    latLong = DoubleArray(2)
+                                    datetime =
+                                        exifInterface!!.getAttribute(android.media.ExifInterface.TAG_DATETIME)
+                                }
+                                // Q 이전 버전일 경우
+                            } else {
+                                exifInterface = ExifInterface(fileList[i])
+                                latLong = exifInterface!!.latLong
+                                datetime =
+                                    exifInterface!!.getAttribute(android.media.ExifInterface.TAG_DATETIME)
+                            }
+                        } catch (e: IOException) {
+                            println(e.toString())
+                        }
+                        try {
+                            // 좌표 정보를 통해 주소를 얻고 이를 파일명, 위/경도 정보, 촬영 일시 등을 모두 DB에 추가
+                            geocodingHelper = GeocodingHelper(context, latLong!![0], latLong[1])
+                            address = geocodingHelper!!.address
+                            dbHelper.insertImageToDB(fileList[i], latLong[0], latLong[1], address, datetime)
+                            Log.i(TAG, "Image " + fileList[i] + address)
+                            newPictureCount += 1
+                        } catch (e: NullPointerException) {
+                            // 좌표 정보가 없을 경우
+                            Log.i(TAG, "Image " + fileList[i] + " has no coordination info.")
+                            // 좌표 정보 없는 사진 개수 count
+                            noLatLngCount += 1
+                        }
+
                     // TODO : 이미 추가된 사진인지 확인
                     /*
                     val params = arrayOf(absolutePathOfImage)
@@ -65,73 +109,32 @@ class PictureScanHelper(private val context: Context) {
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    fun initializePictureDB(dbHelper: DBHelper, fileList: ArrayList<String>) {
-        var latLong: DoubleArray? = DoubleArray(2)
-        var newPictureCount = 0
-        var noLatLngCount = 0
-        var address: String? = ""
-        var datetime: String? = ""
-        for (i in fileList.indices) {
-            try {
-                // 위/경도, 일시, 주소 얻기
-                // Android Q 이상의 경우 위치 정보가 사진에 직접적으로 담겨 있지 않음
-                // Q이상 일 경우
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    val photoUri = MediaStore.setRequireOriginal(Uri.parse(fileList[i]))
-                    val stream = context.contentResolver.openInputStream(photoUri)
-                    if (stream != null) {
-                        val exifInterface = ExifInterface(stream)
-                        latLong = exifInterface.latLong
-                        datetime =
-                            exifInterface.getAttribute(android.media.ExifInterface.TAG_DATETIME)
-                        stream.close()
-                    } else {
-                        latLong = DoubleArray(2)
-                        datetime =
-                            exifInterface!!.getAttribute(android.media.ExifInterface.TAG_DATETIME)
-                    }
-                    // Q 이전 버전일 경우
-                } else {
-                    exifInterface = ExifInterface(fileList[i])
-                    latLong = exifInterface!!.latLong
-                    datetime =
-                        exifInterface!!.getAttribute(android.media.ExifInterface.TAG_DATETIME)
-                }
-            } catch (e: IOException) {
-                println(e.toString())
-            }
-            try {
-                // 좌표 정보를 통해 주소를 얻고 이를 파일명, 위/경도 정보, 촬영 일시 등을 모두 DB에 추가
-                geocodingHelper = GeocodingHelper(context, latLong!![0], latLong[1])
-                address = geocodingHelper!!.address
-                dbHelper.insertImageToDB(fileList[i], latLong[0], latLong[1], address, datetime)
-                Log.i(TAG, "Image " + fileList[i] + address)
-                newPictureCount += 1
-            } catch (e: NullPointerException) {
-                // 좌표 정보가 없을 경우
-                Log.i(TAG, "Image " + fileList[i] + " has no coordination info.")
-                // 좌표 정보 없는 사진 개수 count
-                noLatLngCount += 1
-            }
-        }
+//    fun initializePictureDB(dbHelper: DBHelper, fileList: ArrayList<String>) {
+//        var latLong: DoubleArray? = DoubleArray(2)
+//        var newPictureCount = 0
+//        var noLatLngCount = 0
+//        var address: String? = ""
+//        var datetime: String? = ""
 
-        // 탐색 결과 출력
-        if (newPictureCount != 0) {
-            Toast.makeText(context, "새로운 사진 " + newPictureCount + "장을 찾았습니다.", Toast.LENGTH_LONG)
-                .show()
-        }
-        if (noLatLngCount != 0) {
-            Toast.makeText(
-                context, """
-     좌표 정보가 없는 사진 ${noLatLngCount}장을 찾았습니다. 
-     지도에는 추가되지 않습니다.
-     """.trimIndent(), Toast.LENGTH_LONG
-            ).show()
-        }
-        if (newPictureCount == 0 && noLatLngCount == 0) {
-            Toast.makeText(context, "새로운 사진이 없습니다.", Toast.LENGTH_LONG).show()
-        }
-    }
+//        }
+//
+//        // 탐색 결과 출력
+//        if (newPictureCount != 0) {
+//            Toast.makeText(context, "새로운 사진 " + newPictureCount + "장을 찾았습니다.", Toast.LENGTH_LONG)
+//                .show()
+//        }
+//        if (noLatLngCount != 0) {
+//            Toast.makeText(
+//                context, """
+//     좌표 정보가 없는 사진 ${noLatLngCount}장을 찾았습니다.
+//     지도에는 추가되지 않습니다.
+//     """.trimIndent(), Toast.LENGTH_LONG
+//            ).show()
+//        }
+//        if (newPictureCount == 0 && noLatLngCount == 0) {
+//            Toast.makeText(context, "새로운 사진이 없습니다.", Toast.LENGTH_LONG).show()
+//        }
+//    }
 
     fun addPicture(pictureList : List<PictureEntity>){
         val insertTask= @SuppressLint("StaticFieldLeak")
