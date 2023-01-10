@@ -1,13 +1,17 @@
 package com.udangtangtang.haveibeen.util
 
+import android.annotation.SuppressLint
 import android.content.*
 import android.widget.Toast
 import android.os.Build
 import android.net.Uri
+import android.os.AsyncTask
 import android.provider.MediaStore
 import android.text.TextUtils
 import android.util.Log
 import androidx.exifinterface.media.ExifInterface
+import com.udangtangtang.haveibeen.model.PictureDatabase
+import com.udangtangtang.haveibeen.model.PictureEntity
 import java.io.IOException
 import java.lang.NullPointerException
 import java.util.ArrayList
@@ -16,6 +20,7 @@ class PictureScanHelper(private val context: Context) {
     private val TAG = "pictureManager"
     private lateinit var exifInterface: ExifInterface
     private lateinit var geocodingHelper: GeocodingHelper
+    private lateinit var pictureDB:PictureDatabase
 
     fun scanPictures(): ArrayList<String> {
 
@@ -29,26 +34,34 @@ class PictureScanHelper(private val context: Context) {
             null,
             MediaStore.MediaColumns.DATE_ADDED + " desc"
         )?.use{ cursor ->
+            var pictureList= mutableListOf<PictureEntity>()
             while (cursor.moveToNext()){
                 val absolutePathOfImage = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
                 val nameOfFile = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME))
                 var lastIdx:Int =absolutePathOfImage.lastIndexOf(nameOfFile)
                 lastIdx=if(lastIdx>=0) lastIdx else nameOfFile.length-1
-                // TODO : Use Room
-//                if (!TextUtils.isEmpty(absolutePathOfImage)) {
-//                    // 이미 추가된 사진인지 확인
-//                    val params = arrayOf(absolutePathOfImage)
-//                    val cursor1 = sqlDB.rawQuery("select filename from myDB where filename=?;", params)
-//                    if (cursor1 != null && cursor1.moveToFirst()) {
-//                        // 존재하면 pass
-//                    } else {
-//                        // 존재하지 않으면 추가
-//                        fileList.add(absolutePathOfImage)
-//                    }
-//                }
+                if (!TextUtils.isEmpty(absolutePathOfImage)) {
+                    val picture=PictureEntity(absolutePathOfImage, null, null,null)
+                    pictureList.add(picture)
+
+                    // TODO : 이미 추가된 사진인지 확인
+                    /*
+                    val params = arrayOf(absolutePathOfImage)
+                    val cursor1 = sqlDB.rawQuery("select filen.me from myDB where filename=?;", params)
+                    if (cursor1 != null && cursor1.moveToFirst()) {
+                        // 존재하면 pass
+                    } else {
+                        // 존재하지 않으면 추가
+                        fileList.add(absolutePathOfImage)
+                    }
+                    */
+                }
             }
 
+            addPicture(pictureList)
+
         }
+    }
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,6 +130,22 @@ class PictureScanHelper(private val context: Context) {
         }
         if (newPictureCount == 0 && noLatLngCount == 0) {
             Toast.makeText(context, "새로운 사진이 없습니다.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    fun addPicture(pictureList : List<PictureEntity>){
+        val insertTask= @SuppressLint("StaticFieldLeak")
+        object: AsyncTask<Unit, Unit, Unit>(){
+            override fun doInBackground(vararg params: Unit?) {
+                for (picture in pictureList){
+                    pictureDB.pictureDao().insert(picture)
+                }
+            }
+
+            override fun onPostExecute(result: Unit?) {
+                super.onPostExecute(result)
+                // TODO : DB에 사진 추가한 후 액션
+            }
         }
     }
 }

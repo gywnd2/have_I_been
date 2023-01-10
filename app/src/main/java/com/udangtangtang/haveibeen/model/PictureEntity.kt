@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
-data class PictureData(
+data class PictureEntity(
     @PrimaryKey val fileName : String,
     @ColumnInfo val locationName : String,
     @ColumnInfo var rating : Float?,

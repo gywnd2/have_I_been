@@ -7,24 +7,16 @@ import com.naver.maps.map.util.FusedLocationSource
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.UiSettings
 import com.naver.maps.map.overlay.InfoWindow
-import com.udangtangtang.haveibeen.model.DBHelper
 import com.udangtangtang.haveibeen.util.PictureScanHelper
-import com.udangtangtang.haveibeen.model.InfoWindowData
 import android.os.Bundle
-import com.udangtangtang.haveibeen.R
 import com.udangtangtang.haveibeen.util.PermissionHelper
 import android.Manifest.permission
-import com.udangtangtang.haveibeen.MainActivity
 import android.content.Intent
-import com.udangtangtang.haveibeen.SettingActivity
-import com.udangtangtang.haveibeen.RankingActivity
 import androidx.annotation.UiThread
-import android.database.sqlite.SQLiteDatabase
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.overlay.InfoWindow.DefaultViewAdapter
 import android.widget.TextView
 import android.widget.RatingBar
-import com.udangtangtang.haveibeen.RecordDetailActivity
 import com.naver.maps.map.NaverMap.OnMapClickListener
 import android.graphics.PointF
 import androidx.core.app.ActivityCompat
@@ -35,17 +27,17 @@ import com.naver.maps.map.LocationTrackingMode
 import android.widget.Toast
 import com.naver.maps.map.overlay.Marker
 import com.udangtangtang.haveibeen.databinding.ActivityMainBinding
-import com.udangtangtang.haveibeen.model.PictureDao
-import com.udangtangtang.haveibeen.model.PictureData
+import com.udangtangtang.haveibeen.model.*
 import java.util.ArrayList
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickListener {
+    private lateinit var pictureDB:PictureDatabase
     private lateinit var binding: ActivityMainBinding
     private lateinit var mLocationSource: FusedLocationSource
     private lateinit var mNaverMap: NaverMap
     private lateinit var uiSettings: UiSettings
     private lateinit var mInfoWindow: InfoWindow
-    private lateinit var fileList: ArrayList<String>
+    private var pictureList=listOf<PictureEntity>()
     private lateinit var markers: Array<Marker?>
     private lateinit var selectedLatLng: Array<String?>
     private lateinit var pictureScanHelper: PictureScanHelper
@@ -56,6 +48,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setTitle(R.string.app_name)
+
+        // DB 초기화
+        pictureDB=PictureDatabase.getInstance(this)!!
 
         // 외부 저장소 권한 요청
         PermissionHelper.checkPermission(
@@ -73,11 +68,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
 
             // 사진 스캔
             pictureScanHelper = PictureScanHelper(this)
-            fileList = ArrayList()
-            fileList = pictureScanHelper!!.scanPictures(this)
+            pictureList = ArrayList()
+            pictureList = pictureScanHelper!!.scanPictures(this)
 
             // DB에 이미지 파일 추가하고 좌표 있는 이미지 개수 받아오기
-            pictureScanHelper!!.initializePictureDB(dbHelper, fileList)
+            pictureScanHelper!!.initializePictureDB(dbHelper, pictureList)
             dbSize = dbHelper!!.sizeOfPictureDB
         }
 
