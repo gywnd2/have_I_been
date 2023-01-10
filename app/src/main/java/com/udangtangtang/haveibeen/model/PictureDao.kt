@@ -12,6 +12,8 @@ interface PictureDao {
     fun insert(picture : PictureEntity)
     @Delete
     fun delete(pictureEntity: PictureEntity)
-    @Query("SELECT * FROM PictureEntity")
-    fun getAllPictures(): List<PictureEntity>
+    @Query("SELECT fileName FROM pictureentity")
+    fun getFileName(): String
+    @Query("SELECT COUNT(*) FROM pictureentity")
+    fun getPictureNumbers() : Int
 }

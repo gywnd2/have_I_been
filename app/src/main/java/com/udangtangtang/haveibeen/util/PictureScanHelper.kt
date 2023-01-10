@@ -23,9 +23,8 @@ class PictureScanHelper(private val context: Context) {
     private lateinit var pictureDB:PictureDatabase
 
 
-    fun scanPictures(): ArrayList<String> {
+    fun scanPictures() {
 
-        val fileList = ArrayList<String>()
         val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         val projection = arrayOf(MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.DISPLAY_NAME)
         val cursor = context.contentResolver.query(
@@ -34,59 +33,64 @@ class PictureScanHelper(private val context: Context) {
             null,
             null,
             MediaStore.MediaColumns.DATE_ADDED + " desc"
-        )?.use{ cursor ->
-            var pictureList= mutableListOf<PictureEntity>()
-            while (cursor.moveToNext()){
-                val absolutePathOfImage = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
-                val nameOfFile = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME))
-                var lastIdx:Int =absolutePathOfImage.lastIndexOf(nameOfFile)
-                lastIdx=if(lastIdx>=0) lastIdx else nameOfFile.length-1
+        )?.use { cursor ->
+            var pictureList = mutableListOf<PictureEntity>()
+            while (cursor.moveToNext()) {
+                val absolutePathOfImage =
+                    cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
+                val nameOfFile =
+                    cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME))
+//                var lastIdx:Int =absolutePathOfImage.lastIndexOf(nameOfFile)
+//                lastIdx=if(lastIdx>=0) lastIdx else nameOfFile.length-1
                 if (!TextUtils.isEmpty(absolutePathOfImage)) {
-                    val picture=PictureEntity(absolutePathOfImage, null, null,null)
-                    pictureList.add(picture)
+                    // 위/경도, 일시, 주소 얻기
+                    var latLong: DoubleArray? = null
+                    val datetime: String?
+                    var address: String? = null
 
-                    for (picture in pictureList.indices) {
-                        try {
-                            // 위/경도, 일시, 주소 얻기
-                            // Android Q 이상의 경우 위치 정보가 사진에 직접적으로 담겨 있지 않음
-                            // Q이상 일 경우
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                val photoUri = MediaStore.setRequireOriginal(Uri.parse(picture.))
-                                val stream = context.contentResolver.openInputStream(photoUri)
-                                if (stream != null) {
-                                    val exifInterface = ExifInterface(stream)
-                                    latLong = exifInterface.latLong
-                                    datetime =
-                                        exifInterface.getAttribute(android.media.ExifInterface.TAG_DATETIME)
-                                    stream.close()
-                                } else {
-                                    latLong = DoubleArray(2)
-                                    datetime =
-                                        exifInterface!!.getAttribute(android.media.ExifInterface.TAG_DATETIME)
-                                }
-                                // Q 이전 버전일 경우
-                            } else {
-                                exifInterface = ExifInterface(fileList[i])
-                                latLong = exifInterface!!.latLong
+                    try {
+                        // Android Q 이상의 경우 위치 정보가 사진에 직접적으로 담겨 있지 않음
+                        // Q이상 일 경우
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            val photoUri =
+                                MediaStore.setRequireOriginal(Uri.parse(absolutePathOfImage))
+                            val stream = context.contentResolver.openInputStream(photoUri)
+                            if (stream != null) {
+                                val exifInterface = ExifInterface(stream)
+                                latLong = exifInterface.latLong
                                 datetime =
+                                    exifInterface.getAttribute(android.media.ExifInterface.TAG_DATETIME)
+                                stream.close()
+                            } else {
+                                val datetime =
                                     exifInterface!!.getAttribute(android.media.ExifInterface.TAG_DATETIME)
                             }
-                        } catch (e: IOException) {
-                            println(e.toString())
+                            // Q 이전 버전일 경우
+                        } else {
+                            exifInterface = ExifInterface(absolutePathOfImage)
+                            val latLong = exifInterface!!.latLong
+                            val datetime =
+                                exifInterface!!.getAttribute(android.media.ExifInterface.TAG_DATETIME)
                         }
-                        try {
-                            // 좌표 정보를 통해 주소를 얻고 이를 파일명, 위/경도 정보, 촬영 일시 등을 모두 DB에 추가
-                            geocodingHelper = GeocodingHelper(context, latLong!![0], latLong[1])
-                            address = geocodingHelper!!.address
-                            dbHelper.insertImageToDB(fileList[i], latLong[0], latLong[1], address, datetime)
-                            Log.i(TAG, "Image " + fileList[i] + address)
-                            newPictureCount += 1
-                        } catch (e: NullPointerException) {
-                            // 좌표 정보가 없을 경우
-                            Log.i(TAG, "Image " + fileList[i] + " has no coordination info.")
-                            // 좌표 정보 없는 사진 개수 count
-                            noLatLngCount += 1
-                        }
+                    } catch (e: IOException) {
+                        println(e.toString())
+                    }
+                    try {
+                        // 좌표 정보를 통해 주소를 얻고 이를 파일명, 위/경도 정보, 촬영 일시 등을 모두 DB에 추가
+                        geocodingHelper = GeocodingHelper(context,)
+                        address = geocodingHelper!!.getAddress(latLong!!.get(0), latLong.get(1))
+
+                        Log.i(TAG, "Image " + absolutePathOfImage + address)
+//                        newPictureCount += 1
+                    } catch (e: NullPointerException) {
+                        // 좌표 정보가 없을 경우
+                        Log.i(TAG, "Image " + absolutePathOfImage + " has no coordination info.")
+                        // 좌표 정보 없는 사진 개수 count
+//                        noLatLngCount += 1
+                    }
+
+                    val picture = PictureEntity(absolutePathOfImage, address!!, null, null)
+                    pictureList.add(picture)
 
                     // TODO : 이미 추가된 사진인지 확인
                     /*
@@ -103,10 +107,8 @@ class PictureScanHelper(private val context: Context) {
             }
 
             addPicture(pictureList)
-
         }
     }
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 //    fun initializePictureDB(dbHelper: DBHelper, fileList: ArrayList<String>) {

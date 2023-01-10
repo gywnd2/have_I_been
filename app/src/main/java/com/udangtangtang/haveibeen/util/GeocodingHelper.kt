@@ -10,9 +10,10 @@ import com.bumptech.glide.Glide.init
 import com.udangtangtang.haveibeen.util.PictureScanHelper
 import java.io.IOException
 
-class GeocodingHelper(private val context: Context) {
+class GeocodingHelper(private val context: Context, ) {
     private lateinit var geocoder: Geocoder
-    private var addressList= mutableListOf<Address>()?
+    private var addressList= mutableListOf<Address>()
+    private var address= mutableListOf<String>()
 
     // AdminArea -> 특별, 광역시/도
     // Locality -> 시
@@ -21,14 +22,12 @@ class GeocodingHelper(private val context: Context) {
     init {
         // 역 지오코딩
         geocoder = Geocoder(context)
-
-
     }
 
-    fun getAddress(latLngList:List<>): String? {
+    fun getAddress(latitude : Double, longtitude: Double): String {
         try {
             // Geocoder를 통해 주소 획득
-            addressList = geocoder.getFromLocation(latitude, longtitude, 10)
+            addressList = geocoder.getFromLocation(latitude, longtitude, 10)!!
         } catch (e: IOException) {
             Log.d("Geocoder", e.printStackTrace().toString())
         }
@@ -55,6 +54,6 @@ class GeocodingHelper(private val context: Context) {
                 }
             }
         }
-        return result
+        return result!!
     }
 }
