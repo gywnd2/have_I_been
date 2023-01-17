@@ -2,7 +2,6 @@ package com.udangtangtang.haveibeen.util
 
 import android.annotation.SuppressLint
 import android.content.*
-import android.widget.Toast
 import android.os.Build
 import android.net.Uri
 import android.os.AsyncTask
@@ -10,21 +9,18 @@ import android.provider.MediaStore
 import android.text.TextUtils
 import android.util.Log
 import androidx.exifinterface.media.ExifInterface
-import com.udangtangtang.haveibeen.model.PictureDatabase
-import com.udangtangtang.haveibeen.model.PictureEntity
+import com.udangtangtang.haveibeen.entity.PictureEntity
 import java.io.IOException
 import java.lang.NullPointerException
-import java.util.ArrayList
 
 class PictureScanHelper(private val context: Context) {
     private val TAG = "pictureManager"
     private lateinit var exifInterface: ExifInterface
     private lateinit var geocodingHelper: GeocodingHelper
-    private lateinit var pictureDB:PictureDatabase
+    private lateinit var pictureDB: PictureDatabase
 
 
     fun scanPictures() {
-
         val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         val projection = arrayOf(MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.DISPLAY_NAME)
         val cursor = context.contentResolver.query(
@@ -77,7 +73,7 @@ class PictureScanHelper(private val context: Context) {
                     }
                     try {
                         // 좌표 정보를 통해 주소를 얻고 이를 파일명, 위/경도 정보, 촬영 일시 등을 모두 DB에 추가
-                        geocodingHelper = GeocodingHelper(context,)
+                        geocodingHelper = GeocodingHelper(context)
                         address = geocodingHelper!!.getAddress(latLong!!.get(0), latLong.get(1))
 
                         Log.i(TAG, "Image " + absolutePathOfImage + address)
@@ -89,7 +85,7 @@ class PictureScanHelper(private val context: Context) {
 //                        noLatLngCount += 1
                     }
 
-                    val picture = PictureEntity(absolutePathOfImage, address!!, null, null)
+                    val picture = PictureEntity(absolutePathOfImage, address!!, null, null, latLong!!.get(0), latLong!!.get(1))
                     pictureList.add(picture)
 
                     // TODO : 이미 추가된 사진인지 확인

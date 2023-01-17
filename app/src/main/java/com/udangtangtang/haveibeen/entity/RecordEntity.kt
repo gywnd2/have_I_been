@@ -1,11 +1,11 @@
-package com.udangtangtang.haveibeen.model
+package com.udangtangtang.haveibeen.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity
-data class RecordWindow(
+@Entity(tableName="recordDB")
+data class RecordEntity(
     @PrimaryKey val locationName: String,
     @ColumnInfo val address : String,
     @ColumnInfo val datetime : String,
