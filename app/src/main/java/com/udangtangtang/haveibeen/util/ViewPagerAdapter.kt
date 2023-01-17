@@ -1,34 +1,15 @@
 package com.udangtangtang.haveibeen.util
 
 import android.content.*
-import android.database.sqlite.SQLiteOpenHelper
-import android.database.sqlite.SQLiteDatabase
-import com.udangtangtang.haveibeen.model.DBHelper
-import com.udangtangtang.haveibeen.model.InfoWindowData
-import com.udangtangtang.haveibeen.model.RecordData
-import android.location.Geocoder
-import android.widget.Toast
-import android.os.Build
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
-import com.udangtangtang.haveibeen.util.PermissionHelper
-import androidx.core.app.ActivityCompat
-import com.udangtangtang.haveibeen.MainActivity
+import com.udangtangtang.haveibeen.dao.DBHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.udangtangtang.haveibeen.util.ViewPagerAdapter.ViewHolderPage
 import android.view.ViewGroup
 import android.view.LayoutInflater
 import com.udangtangtang.haveibeen.R
 import com.bumptech.glide.Glide
-import com.udangtangtang.haveibeen.util.GeocodingHelper
-import android.provider.MediaStore
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
-import com.udangtangtang.haveibeen.util.ViewPagerAdapter
-import androidx.viewpager2.widget.ViewPager2
-import com.udangtangtang.haveibeen.util.PictureScanHelper
 import java.io.File
 import java.util.ArrayList
 
