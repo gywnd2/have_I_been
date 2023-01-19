@@ -12,20 +12,20 @@ import androidx.viewpager2.widget.ViewPager2
 import android.location.Address
 import android.media.ExifInterface
 import android.view.View
+import com.udangtangtang.haveibeen.database.RecordDatabase
 import com.udangtangtang.haveibeen.databinding.ActivityRecordDetailBinding
 import java.io.IOException
 
 class RecordDetailActivity : AppCompatActivity() {
     private var binding: ActivityRecordDetailBinding? = null
-    private var dbHelper: DBHelper? = null
-    private var selectedLatLng: Array<String?>
+    private lateinit var recordDB : RecordDatabase
+    private lateinit var selectedLatLng: Array<String?>
     private var exifInterface: ExifInterface? = null
     private var geocodingHelper: GeocodingHelper? = null
     private var firstFileName: String? = null
     private var dialog: AlertDialog? = null
     private val addressList: List<Address>? = null
     private var builder: AlertDialog.Builder? = null
-    private var recordData: RecordData? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRecordDetailBinding.inflate(
@@ -45,7 +45,7 @@ class RecordDetailActivity : AppCompatActivity() {
         binding!!.recordDetailViewpager2.orientation = ViewPager2.ORIENTATION_HORIZONTAL
 
         // DB연결을 위해 Helper 초기화
-        dbHelper = DBHelper(this)
+        recordDB=RecordDatabase.getInstance(this)!!
 
         // 같은 위/경도를 갖는 이미지 중 맨 처음 파일에 데이터 저장
         firstFileName = dbHelper!!.getFileNameByLatLng(selectedLatLng)

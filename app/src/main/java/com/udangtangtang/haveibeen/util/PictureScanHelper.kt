@@ -9,6 +9,7 @@ import android.provider.MediaStore
 import android.text.TextUtils
 import android.util.Log
 import androidx.exifinterface.media.ExifInterface
+import com.udangtangtang.haveibeen.database.PictureDatabase
 import com.udangtangtang.haveibeen.entity.PictureEntity
 import java.io.IOException
 import java.lang.NullPointerException
@@ -139,7 +140,7 @@ class PictureScanHelper(private val context: Context) {
         object: AsyncTask<Unit, Unit, Unit>(){
             override fun doInBackground(vararg params: Unit?) {
                 for (picture in pictureList){
-                    pictureDB.pictureDao().insert(picture)
+                    pictureDB.getPictureDao().insert(picture)
                 }
             }
 

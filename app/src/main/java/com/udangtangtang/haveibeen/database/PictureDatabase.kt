@@ -1,4 +1,4 @@
-package com.udangtangtang.haveibeen.util
+package com.udangtangtang.haveibeen.database
 
 import android.content.Context
 import androidx.room.Database
@@ -9,7 +9,7 @@ import com.udangtangtang.haveibeen.entity.PictureEntity
 
 @Database(entities= arrayOf(PictureEntity::class), version=1)
 abstract class PictureDatabase :RoomDatabase(){
-    abstract fun pictureDao() : PictureDao
+    abstract fun getPictureDao() : PictureDao
 
     companion object{
         var INSTANCE: PictureDatabase?=null

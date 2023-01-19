@@ -3,7 +3,7 @@ package com.udangtangtang.haveibeen.dao
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy.REPLACE
+import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
 import com.udangtangtang.haveibeen.entity.PictureEntity
 
@@ -18,7 +18,9 @@ interface PictureDao {
     @Query("SELECT COUNT(*) FROM pictureDB")
     fun getPictureNumbers() : Int
     @Query("SELECT fileName FROM pictureDB")
-    fun getFileList() : ArrayList<String>
+    fun getFileList() : List<String>
     @Query("SELECT latitude, longtitude FROM pictureDB WHERE fileName LIKE :absoluteFilePath")
     fun getPictureLatLng(absoluteFilePath : String) : DoubleArray
+    @Query("SELECT COUNT(locationName) FROM pictureDB")
+    fun getAddressCount() : List<String>
 }

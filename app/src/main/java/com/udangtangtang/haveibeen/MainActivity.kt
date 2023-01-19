@@ -14,8 +14,6 @@ import android.Manifest.permission
 import android.content.Intent
 import androidx.annotation.UiThread
 import com.naver.maps.geometry.LatLng
-import android.widget.TextView
-import android.widget.RatingBar
 import com.naver.maps.map.NaverMap.OnMapClickListener
 import android.graphics.PointF
 import androidx.core.app.ActivityCompat
@@ -24,18 +22,19 @@ import android.database.Cursor
 import android.view.View
 import com.naver.maps.map.LocationTrackingMode
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
+import androidx.core.content.ContextCompat
 import com.naver.maps.map.overlay.Marker
 import com.udangtangtang.haveibeen.databinding.ActivityMainBinding
 import com.udangtangtang.haveibeen.databinding.MarkerInfowindowBinding
-import com.udangtangtang.haveibeen.dao.*
 import com.udangtangtang.haveibeen.entity.RecordEntity
-import com.udangtangtang.haveibeen.util.PictureDatabase
-import com.udangtangtang.haveibeen.util.RecordDatabase
+import com.udangtangtang.haveibeen.database.PictureDatabase
+import com.udangtangtang.haveibeen.database.RecordDatabase
 import java.util.ArrayList
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickListener {
     private lateinit var pictureDB: PictureDatabase
-    private lateinit var recordDB:RecordDatabase
+    private lateinit var recordDB: RecordDatabase
     private lateinit var binding: ActivityMainBinding
     private lateinit var mLocationSource: FusedLocationSource
     private lateinit var mNaverMap: NaverMap
@@ -54,34 +53,68 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         setContentView(binding.root)
         setTitle(R.string.app_name)
 
+
+
         // 외부 저장소 권한 요청
-        permissionHelper.checkPermission(
-            this,
-            permission.READ_EXTERNAL_STORAGE,
-            REQ_PERMISSION_CALLBACK
-        )
+//        val requestPermissionLauncher=registerForActivityResult(RequestPermission()){
+//            isGranted: Boolean->
+//                if(isGranted){
+//                    Toast.makeText(this, "권한 획득", Toast.LENGTH_LONG).show()
+//                }else{
+//                    Toast.makeText(this, "권한 획득 실패", Toast.LENGTH_LONG).show()
+//                }
+//        }
+//
+//        when {
+//            ContextCompat.checkSelfPermission(
+//                this, Manifest.permission.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION)==PackageManager.PERMISSION_GRANTED->{
+//                pictureDB= PictureDatabase.getInstance(this)!!
+//                recordDB= RecordDatabase.getInstance(this)!!
+//
+//                // 사진 스캔
+//                pictureScanHelper = PictureScanHelper(this)
+//                pictureScanHelper!!.scanPictures()
+//                Toast.makeText(this, pictureDB.getPictureDao().getPictureNumbers().toString(), Toast.LENGTH_LONG).show()
+//
+//            }
+//            shouldShowRequestPermissionRationale(permission.READ_EXTERNAL_STORAGE)->{
+//                // TODO : 권한 획득 요청 메시지
+//            }
+//            else->{
+//                requestPermissionLauncher.launch(
+//                    Manifest.permission.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION)
+//            }
+//        }
+
+//        permissionHelper.checkPermission(
+//            this,
+//            permission.READ_EXTERNAL_STORAGE,
+//            REQ_PERMISSION_CALLBACK
+//        )
+//        Toast.makeText(this, permissionHelper.checkPermissionGranted(this, permission.READ_EXTERNAL_STORAGE).toString(), Toast.LENGTH_LONG).show()
 
         // 권한이 있다면 DB 초기화 및 사진 스캔
-        if (permissionHelper.isPermissionGranted(this, permission.READ_EXTERNAL_STORAGE)){
-            // DB 초기화
-            pictureDB= PictureDatabase.getInstance(this)!!
-            recordDB=RecordDatabase.getInstance(this)!!
-
-            // 사진 스캔
-            pictureScanHelper = PictureScanHelper(this)
-            pictureScanHelper!!.scanPictures()
-
-        }
+//        if (permissionHelper.checkPermissionGranted(this, permission.READ_EXTERNAL_STORAGE)){
+////             DB 초기화
+//            pictureDB= PictureDatabase.getInstance(this)!!
+//            recordDB= RecordDatabase.getInstance(this)!!
+//
+//            // 사진 스캔
+//            pictureScanHelper = PictureScanHelper(this)
+//            pictureScanHelper!!.scanPictures()
+//            Toast.makeText(this, pictureDB.getPictureDao().getPictureNumbers().toString(), Toast.LENGTH_LONG).show()
+//
+//        }
 
         // mapView 초기화
         binding.mainMapView.getMapAsync(this)
         mLocationSource = FusedLocationSource(this, PERMISSION_REQUEST_CODE)
 
         // Floating Button (Settings)
-        binding.mainFabSettings.setOnClickListener(View.OnClickListener {
-            val intent = Intent(applicationContext, SettingActivity::class.java)
-            startActivity(intent)
-        })
+//        binding.mainFabSettings.setOnClickListener(View.OnClickListener {
+//            val intent = Intent(applicationContext, SettingActivity::class.java)
+//            startActivity(intent)
+//        })
 
 //         Floating Button (Ranking), 클릭 시 랭킹 액티비티 전환
         binding.mainFabRanking.setOnClickListener(View.OnClickListener {
@@ -93,15 +126,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
     @UiThread
     override fun onMapReady(naverMap: NaverMap) {
         // DB로부터 마커 추가
-        if (permissionHelper.isPermissionGranted(this, permission.READ_EXTERNAL_STORAGE)) {
+        if (permissionHelper.checkPermissionGranted(this, permission.READ_EXTERNAL_STORAGE)) {
             var markerIdx = 0
             val cursor: Cursor
             markers = arrayListOf<Marker?>()
-            pictureList=pictureDB.pictureDao().getFileList()
+            pictureList=pictureDB.getPictureDao().getFileList() as ArrayList<String>
 
-            for (i in 0 until pictureDB.pictureDao().getPictureNumbers()){
+            for (i in 0 until pictureDB.getPictureDao().getPictureNumbers()){
                 markers[i]=Marker()
-                val latLng=pictureDB.pictureDao().getPictureLatLng(pictureList.get(i))
+                val latLng=pictureDB.getPictureDao().getPictureLatLng(pictureList.get(i))
                 markers[i]!!.position=LatLng(latLng[0], latLng[1])
                 markers[i]!!.map=naverMap
 
@@ -132,24 +165,25 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
 
                 // 가져온 데이터로 뷰 만들기
                 val infowindowBinding = MarkerInfowindowBinding.inflate(layoutInflater)
-                val record : RecordEntity=recordDB.recordDao().getRecord(selectedLatLng.get(0), selectedLatLng.get(1))
+                val record : RecordEntity =recordDB.getRecordDao().getRecord(selectedLatLng.get(0), selectedLatLng.get(1))
                 if (record.locationName==null) infowindowBinding.infoWindowLocationTitle.text=getString(R.string.record_detail_no_locName) else infowindowBinding.infoWindowLocationTitle.text=record.locationName
                 if (record.latitude==null || record.longtitude==null) infowindowBinding.infoWindowLocationAddress.text=getString(R.string.no_location_info) else infowindowBinding.infoWindowLocationAddress.text=record.address
                 if (record.datetime==null) infowindowBinding.infoWindowDatetime.text=getString(R.string.no_datetime_info) else infowindowBinding.infoWindowDatetime.text=record.datetime
                 if (record.comment==null) infowindowBinding.infoWindowComment.text=getString(R.string.record_detail_no_comment) else infowindowBinding.infoWindowComment.text=record.comment
-                if (record.rating==null) infowindowBinding.infoWindowRatingBar.rating=0.0.toFloat() else infowindowBinding.infoWindowRatingBar.rating=record.rating
-                return view
+                if (record.rating==null) infowindowBinding.infoWindowRatingBar.rating=0.0.toFloat() else infowindowBinding.infoWindowRatingBar.rating=
+                    record.rating!!
+                return infowindowBinding.root
             }
         }
 
         // 정보창 클릭 이벤트
-        mInfoWindow!!.onClickListener = Overlay.OnClickListener { // 정보창 클릭 시 정보 상세정보 확인 액티비티 전환
-            val intent = Intent(binding!!.root.context, RecordDetailActivity::class.java)
-            // 인텐트에 위/경도를 첨부해서 전달
-            intent.putExtra("selectedLatLng", selectedLatLng)
-            startActivity(intent)
-            false
-        }
+//        mInfoWindow!!.onClickListener = Overlay.OnClickListener { // 정보창 클릭 시 정보 상세정보 확인 액티비티 전환
+//            val intent = Intent(binding!!.root.context, RecordDetailActivity::class.java)
+//            // 인텐트에 위/경도를 첨부해서 전달
+//            intent.putExtra("selectedLatLng", selectedLatLng)
+//            startActivity(intent)
+//            false
+//        }
 
         // 정보창이 아닌 지도 클릭 시 정보창 닫기
         naverMap.onMapClickListener =

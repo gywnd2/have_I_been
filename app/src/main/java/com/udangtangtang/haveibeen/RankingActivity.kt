@@ -1,15 +1,15 @@
 package com.udangtangtang.haveibeen
 
-import com.udangtangtang.haveibeen.dao.DBHelper
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.udangtangtang.haveibeen.databinding.ActivityRankingBinding
+import com.udangtangtang.haveibeen.database.PictureDatabase
 import java.util.*
 
 class RankingActivity : AppCompatActivity() {
     private var binding: ActivityRankingBinding? = null
-    private var addressList: ArrayList<String?>? = null
-    private var dbHelper: DBHelper? = null
+    private var addressList: ArrayList<String>? = null
+    private lateinit var pictureDB: PictureDatabase
     private var count: String? = null
     private var addr: String? = null
     private var rank: String? = null
@@ -23,18 +23,20 @@ class RankingActivity : AppCompatActivity() {
         setTitle(R.string.ranking_title)
 
         // DB접근을 위한 Helper 초기화
-        dbHelper = DBHelper(this)
-        val sqlDB = dbHelper!!.readableDatabase
-        val cursor = sqlDB.rawQuery("select * from addressDB", null)
+        pictureDB= PictureDatabase.getInstance(this)!!
+        addressList=pictureDB.getPictureDao().getAddressCount() as ArrayList<String>
+
+//        val sqlDB = dbHelper!!.readableDatabase
+//        val cursor = sqlDB.rawQuery("select * from addressDB", null)
 
         // 주소 DB를 받아올 ArrayList 초기화, TextView로 출력할 string 초기화
         rank = "---" + System.lineSeparator()
         count = "----" + System.lineSeparator()
         addr = "-------------------------------------------" + System.lineSeparator()
-        addressList = ArrayList()
-        if (cursor.moveToFirst()) {
-            addressList = dbHelper.allAddressInDB
-        }
+//        addressList = ArrayList()
+//        if (cursor.moveToFirst()) {
+//            addressList = dbHelper.allAddressInDB
+//        }
 
         // 주소 빈도 수 계산
         val map: MutableMap<String?, Int> = HashMap()

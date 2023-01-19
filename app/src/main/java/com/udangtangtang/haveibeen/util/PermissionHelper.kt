@@ -13,7 +13,7 @@ class PermissionHelper {
     /  https://3001ssw.tistory.com/191
     */
     // 권한 확인
-    fun isPermissionGranted(context: Context?, permissionName: String?): Boolean {
+    fun checkPermissionGranted(context: Context?, permissionName: String?): Boolean {
         var isPermissionGranted = true
 
         // Android 6.0 이상
@@ -35,7 +35,7 @@ class PermissionHelper {
 
     fun checkPermission(context: Context?, permissionName: String?, iCallback: Int): Boolean {
         // 권한이 있는지 체크
-        var isPermissionGranted = isPermissionGranted(context, permissionName)
+        var isPermissionGranted = checkPermissionGranted(context, permissionName)
 
         // 없으면 요청
         if (!isPermissionGranted) {
