@@ -2,6 +2,7 @@ package com.udangtangtang.haveibeen.util
 
 import android.annotation.SuppressLint
 import android.content.*
+import android.icu.text.SimpleDateFormat
 import android.os.Build
 import android.net.Uri
 import android.os.AsyncTask
@@ -23,13 +24,15 @@ class PictureScanHelper(private val context: Context) {
 
     fun scanPictures() {
         val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-        val projection = arrayOf(MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.DISPLAY_NAME)
+        val projection = arrayOf(MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.DISPLAY_NAME, MediaStore.MediaColumns.DATE_TAKEN)
+        val selectionArgs = arrayOf(
+            dateToTimestamp(day = 1, month = 1, year = 1970).toString())
         val cursor = context.contentResolver.query(
             uri,
             projection,
             null,
             null,
-            MediaStore.MediaColumns.DATE_ADDED + " desc"
+            MediaStore.MediaColumns.DATE_TAKEN + " desc"
         )?.use { cursor ->
             var pictureList = mutableListOf<PictureEntity>()
             while (cursor.moveToNext()) {
@@ -56,7 +59,7 @@ class PictureScanHelper(private val context: Context) {
                                 val exifInterface = ExifInterface(stream)
                                 latLong = exifInterface.latLong
                                 datetime =
-                                    exifInterface.getAttribute(android.media.ExifInterface.TAG_DATETIME)
+                                    cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_TAKEN))
                                 stream.close()
                             } else {
                                 val datetime =
@@ -67,7 +70,7 @@ class PictureScanHelper(private val context: Context) {
                             exifInterface = ExifInterface(absolutePathOfImage)
                             val latLong = exifInterface!!.latLong
                             val datetime =
-                                exifInterface!!.getAttribute(android.media.ExifInterface.TAG_DATETIME)
+                                cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_TAKEN))
                         }
                     } catch (e: IOException) {
                         println(e.toString())
@@ -86,8 +89,11 @@ class PictureScanHelper(private val context: Context) {
 //                        noLatLngCount += 1
                     }
 
-                    val picture = PictureEntity(absolutePathOfImage, address!!, null, null, latLong!!.get(0), latLong!!.get(1))
-                    pictureList.add(picture)
+                    if(latLong?.isNotEmpty() == true){
+                        val picture = PictureEntity(absolutePathOfImage, address!!, null, null, latLong!!.get(0), latLong!!.get(1))
+                        pictureList.add(picture)
+                    }
+
 
                     // TODO : 이미 추가된 사진인지 확인
                     /*
@@ -106,6 +112,11 @@ class PictureScanHelper(private val context: Context) {
             addPicture(pictureList)
         }
     }
+
+    private fun dateToTimestamp(day: Int, month: Int, year: Int): Long =
+        SimpleDateFormat("yyyy.MM.dd").let { formatter ->
+            formatter.parse("$year.$month.$day")?.time ?: 0
+        }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 //    fun initializePictureDB(dbHelper: DBHelper, fileList: ArrayList<String>) {

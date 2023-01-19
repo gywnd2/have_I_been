@@ -21,6 +21,7 @@ abstract class RecordDatabase :RoomDatabase(){
                     // Drop database when update
                     // TODO : Migrate DB on NON-Destructive way
                         .fallbackToDestructiveMigration()
+                        .allowMainThreadQueries()
                         .build()
                 }
             }
