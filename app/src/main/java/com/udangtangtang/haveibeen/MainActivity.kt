@@ -19,6 +19,7 @@ import android.graphics.PointF
 import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
 import android.database.Cursor
+import android.util.Log
 import android.view.View
 import com.naver.maps.map.LocationTrackingMode
 import android.widget.Toast
@@ -53,38 +54,36 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         setContentView(binding.root)
         setTitle(R.string.app_name)
 
-
-
         // 외부 저장소 권한 요청
-//        val requestPermissionLauncher=registerForActivityResult(RequestPermission()){
-//            isGranted: Boolean->
-//                if(isGranted){
-//                    Toast.makeText(this, "권한 획득", Toast.LENGTH_LONG).show()
-//                }else{
-//                    Toast.makeText(this, "권한 획득 실패", Toast.LENGTH_LONG).show()
-//                }
-//        }
-//
-//        when {
-//            ContextCompat.checkSelfPermission(
-//                this, Manifest.permission.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION)==PackageManager.PERMISSION_GRANTED->{
-//                pictureDB= PictureDatabase.getInstance(this)!!
-//                recordDB= RecordDatabase.getInstance(this)!!
-//
-//                // 사진 스캔
-//                pictureScanHelper = PictureScanHelper(this)
-//                pictureScanHelper!!.scanPictures()
-//                Toast.makeText(this, pictureDB.getPictureDao().getPictureNumbers().toString(), Toast.LENGTH_LONG).show()
-//
-//            }
-//            shouldShowRequestPermissionRationale(permission.READ_EXTERNAL_STORAGE)->{
-//                // TODO : 권한 획득 요청 메시지
-//            }
-//            else->{
-//                requestPermissionLauncher.launch(
-//                    Manifest.permission.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION)
-//            }
-//        }
+        val requestPermissionLauncher=registerForActivityResult(RequestPermission()){
+            isGranted: Boolean->
+                if(isGranted){
+                    Toast.makeText(this, "권한 획득", Toast.LENGTH_LONG).show()
+                }else{
+                    Toast.makeText(this, "권한 획득 실패", Toast.LENGTH_LONG).show()
+                }
+        }
+
+        when {
+            ContextCompat.checkSelfPermission(
+                this, android.Manifest.permission.READ_MEDIA_IMAGES)==PackageManager.PERMISSION_GRANTED->{
+                pictureDB= PictureDatabase.getInstance(this)!!
+                recordDB= RecordDatabase.getInstance(this)!!
+
+                // 사진 스캔
+                pictureScanHelper = PictureScanHelper(this)
+                pictureScanHelper!!.scanPictures()
+                Toast.makeText(this, pictureDB.getPictureDao().getPictureNumbers().toString(), Toast.LENGTH_LONG).show()
+
+            }
+            shouldShowRequestPermissionRationale(android.Manifest.permission.READ_MEDIA_IMAGES)->{
+                // TODO : 권한 획득 요청 메시지
+            }
+            else->{
+                requestPermissionLauncher.launch(
+                    android.Manifest.permission.READ_MEDIA_IMAGES)
+            }
+        }
 
 //        permissionHelper.checkPermission(
 //            this,
@@ -92,8 +91,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
 //            REQ_PERMISSION_CALLBACK
 //        )
 //        Toast.makeText(this, permissionHelper.checkPermissionGranted(this, permission.READ_EXTERNAL_STORAGE).toString(), Toast.LENGTH_LONG).show()
-
-        // 권한이 있다면 DB 초기화 및 사진 스캔
+////        초기화 및 사진 스캔
 //        if (permissionHelper.checkPermissionGranted(this, permission.READ_EXTERNAL_STORAGE)){
 ////             DB 초기화
 //            pictureDB= PictureDatabase.getInstance(this)!!
