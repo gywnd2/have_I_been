@@ -18,13 +18,14 @@ import java.io.IOException
 import java.lang.NullPointerException
 
 class PictureScanHelper(private val context: Context) {
-    // TODO : 미디어 저장소 업데이트 감지, 동영상 스캔 추가
+    // TODO : 미디어 저장소 업데이트 감지, 동영상 스캔 추가, AsyncTask->Coroutine
     // https://developer.android.com/training/data-storage/shared/media?hl=ko#detect-updates-media-files
     private val TAG = "pictureManager"
     private lateinit var geocodingHelper: GeocodingHelper
     private lateinit var pictureDB: PictureDatabase
 
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun scanPictures() {
         val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         val projection = arrayOf(MediaStore.MediaColumns._ID,
