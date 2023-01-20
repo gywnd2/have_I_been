@@ -64,6 +64,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                 }
         }
 
+        // READ_MEDIA_IMAGES 권한 획득
         when {
             ContextCompat.checkSelfPermission(
                 this, android.Manifest.permission.READ_MEDIA_IMAGES)==PackageManager.PERMISSION_GRANTED->{
@@ -71,19 +72,25 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                 recordDB= RecordDatabase.getInstance(this)!!
 
                 // 사진 스캔
-                pictureScanHelper = PictureScanHelper(this)
-                pictureScanHelper!!.scanPictures()
-                Toast.makeText(this, pictureDB.getPictureDao().getPictureNumbers().toString(), Toast.LENGTH_LONG).show()
+                // ACCESS_MEDIA_LOCATION 권한 획득
+                when{
+                    ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_MEDIA_LOCATION)==PackageManager.PERMISSION_GRANTED->{
+                        Toast.makeText(this, "사진 스캔 시작", Toast.LENGTH_LONG).show()
+                        pictureScanHelper = PictureScanHelper(this)
+                        pictureScanHelper!!.scanPictures()
+                    }
+                    else->{
+                        requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_MEDIA_LOCATION)
+                    }
+                }
 
-            }
-            shouldShowRequestPermissionRationale(android.Manifest.permission.READ_MEDIA_IMAGES)->{
-                // TODO : 권한 획득 요청 메시지
             }
             else->{
                 requestPermissionLauncher.launch(
                     android.Manifest.permission.READ_MEDIA_IMAGES)
             }
         }
+
 
 //        permissionHelper.checkPermission(
 //            this,
