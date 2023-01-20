@@ -14,8 +14,10 @@ import com.udangtangtang.haveibeen.util.PictureScanHelper
 import java.io.IOException
 
 class GeocodingHelper(private val context: Context) {
+    // TODO : 주소 수정 기능
     private var geocoder: Geocoder
-    private var result= String
+    private val TAG="GeocodingHelper"
+    private var result=""
 
     // AdminArea -> 특별, 광역시/도
     // Locality -> 시
@@ -29,70 +31,46 @@ class GeocodingHelper(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun getAddress(latitude : Double, longtitude: Double): String {
-        var addressList = mutableListOf<Address>()
-        val geocoderListener= GeocodeListener {
-            if (it.isNotEmpty()) {
-                var address= mutableListOf<String>()
-
-                if (addressList.size == 0) {
-                    Toast.makeText(context, "해당 지역의 주소를 제공할 수 없습니다.", Toast.LENGTH_LONG).show()
-                } else {
-                    address[0] = addressList.get(0).adminArea
-                    address[1] = addressList.get(0).locality
-                    address[2] = addressList.get(0).subLocality
-                    address[3] = addressList.get(0).thoroughfare
-                }
-
-                var result: String? = ""
-                for (i in 0..3) {
-                    // null을 건너 뛰고 각 단위를 이어 붙임
-                    // ex) 경기도 광명시 null 일직동 => 경기도 광명시 일직동
-                    //     경기도 안양시 만안구 석수2동 과 달리 구 단위가 없기 때문
-                    if (address[i] != null) {
-                        result += address[i]
-                        if (i != 3) {
-                            result += " "
-                        }
-                    }
-                }
-            }
-        }
-
         // Geocoder를 통해 주소 획득
         geocoder.getFromLocation(latitude, longtitude, 10, object: Geocoder.GeocodeListener{
             override fun onGeocode(addressList: MutableList<Address>) {
-                if (addressList.isNotEmpty()) {
-                    var address= mutableListOf<String>()
+                 result=addressList.get(0).getAddressLine(0).substring(5)
+                 Log.d(TAG, "!!!!!!!"+result)
 
-                    if (addressList.size == 0) {
-                        Toast.makeText(context, "해당 지역의 주소를 제공할 수 없습니다.", Toast.LENGTH_LONG).show()
-                    } else {
-                        address[0] = addressList.get(0).adminArea
-                        address[1] = addressList.get(0).locality
-                        address[2] = addressList.get(0).subLocality
-                        address[3] = addressList.get(0).thoroughfare
-                    }
-
-                    var result: String? = ""
-                    for (i in 0..3) {
-                        // null을 건너 뛰고 각 단위를 이어 붙임
-                        // ex) 경기도 광명시 null 일직동 => 경기도 광명시 일직동
-                        //     경기도 안양시 만안구 석수2동 과 달리 구 단위가 없기 때문
-                        if (address[i] != null) {
-                            result += address[i]
-                            if (i != 3) {
-                                result += " "
-                            }
-                        }
-                    }
-                }
+//                var result=""
+//                Log.d(TAG, "!!!!!!!addressList:"+addressList.toString())
+//                if (addressList.isNotEmpty()) {
+//                    var address= mutableListOf<String>()
+//
+//                    if (addressList.size == 0) {
+//                        Toast.makeText(context, "해당 지역의 주소를 제공할 수 없습니다.", Toast.LENGTH_LONG).show()
+//                    } else {
+//                        address.add(0, addressList.get(0).adminArea)
+//                        address.add(1, addressList.get(0).locality)
+//                        address.add(2, addressList.get(0).subLocality)
+//                        address.add(3, addressList.get(0).thoroughfare)
+//                    }
+//
+//                    for (i in 0..3) {
+//                        // null을 건너 뛰고 각 단위를 이어 붙임
+//                        // ex) 경기도 광명시 null 일직동 => 경기도 광명시 일직동
+//                        //     경기도 안양시 만안구 석수2동 과 달리 구 단위가 없기 때문
+//                        if (address[i] != null) {
+//                            result += address[i]
+//                            if (i != 3) {
+//                                result += " "
+//                            }
+//                        }
+//                    }
+//                    Log.d(TAG, "!!!!!!!"+result)
+//                }
             }
 
             override fun onError(errorMessage: String?) {
                 super.onError(errorMessage)
             }
         })
-
-        return result.toString()!!
+        Log.d(TAG, "return address : "+result)
+        return result!!
     }
 }

@@ -19,11 +19,14 @@ import android.graphics.PointF
 import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
 import android.database.Cursor
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import android.os.Build
 import android.util.Log
 import android.view.View
 import com.naver.maps.map.LocationTrackingMode
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.naver.maps.map.overlay.Marker
 import com.udangtangtang.haveibeen.databinding.ActivityMainBinding
@@ -47,7 +50,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
     private lateinit var selectedLatLng: Array<Double>
     private lateinit var pictureScanHelper: PictureScanHelper
     private var backKeyTime: Long = 0
-    private var dbSize = 0
+    private val TAG="MainActivity"
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -91,26 +95,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
             }
         }
 
-
-//        permissionHelper.checkPermission(
-//            this,
-//            permission.READ_EXTERNAL_STORAGE,
-//            REQ_PERMISSION_CALLBACK
-//        )
-//        Toast.makeText(this, permissionHelper.checkPermissionGranted(this, permission.READ_EXTERNAL_STORAGE).toString(), Toast.LENGTH_LONG).show()
-////        초기화 및 사진 스캔
-//        if (permissionHelper.checkPermissionGranted(this, permission.READ_EXTERNAL_STORAGE)){
-////             DB 초기화
-//            pictureDB= PictureDatabase.getInstance(this)!!
-//            recordDB= RecordDatabase.getInstance(this)!!
-//
-//            // 사진 스캔
-//            pictureScanHelper = PictureScanHelper(this)
-//            pictureScanHelper!!.scanPictures()
-//            Toast.makeText(this, pictureDB.getPictureDao().getPictureNumbers().toString(), Toast.LENGTH_LONG).show()
-//
-//        }
-
         // mapView 초기화
         binding.mainMapView.getMapAsync(this)
         mLocationSource = FusedLocationSource(this, PERMISSION_REQUEST_CODE)
@@ -131,15 +115,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
     @UiThread
     override fun onMapReady(naverMap: NaverMap) {
         // DB로부터 마커 추가
+        pictureList=pictureDB.getPictureDao().getFileList() as ArrayList<String>
+        Log.d(TAG, pictureDB.getPictureDao().getPictureNumbers().toString())
         if (permissionHelper.checkPermissionGranted(this, permission.READ_EXTERNAL_STORAGE)) {
-            var markerIdx = 0
-            val cursor: Cursor
             markers = arrayListOf<Marker?>()
-            pictureList=pictureDB.getPictureDao().getFileList() as ArrayList<String>
-
             for (i in 0 until pictureDB.getPictureDao().getPictureNumbers()){
                 markers[i]=Marker()
                 val latLng=pictureDB.getPictureDao().getPictureLatLng(pictureList.get(i))
+                Log.d(TAG, "Add Marker at :"+ latLng.toTypedArray().toString())
                 markers[i]!!.position=LatLng(latLng[0], latLng[1])
                 markers[i]!!.map=naverMap
 

@@ -18,12 +18,15 @@ import java.io.IOException
 import java.lang.NullPointerException
 
 class PictureScanHelper(private val context: Context) {
-    // TODO : 미디어 저장소 업데이트 감지, 동영상 스캔 추가, AsyncTask->Coroutine
+    // TODO : 미디어 저장소 업데이트 감지, 동영상 스캔 추가, AsyncTask->Coroutine, 이전 버전?
     // https://developer.android.com/training/data-storage/shared/media?hl=ko#detect-updates-media-files
-    private val TAG = "pictureManager"
+    private val TAG = "PictureScanHelper"
     private lateinit var geocodingHelper: GeocodingHelper
     private lateinit var pictureDB: PictureDatabase
 
+    init{
+        pictureDB= PictureDatabase.getInstance(context)!!
+    }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun scanPictures() {
@@ -69,7 +72,7 @@ class PictureScanHelper(private val context: Context) {
                     geocodingHelper = GeocodingHelper(context)
                     if (latLong?.isNotEmpty() == true) {
                         address = geocodingHelper!!.getAddress(latLong!!.get(0), latLong!!.get(1))
-                        Log.i(TAG, "Image " + absolutePathOfImage + address)
+                        Log.i(TAG, "Image " + address)
                     } else {
                         // 좌표 정보가 없을 경우
                         Log.i(
@@ -142,12 +145,13 @@ class PictureScanHelper(private val context: Context) {
 //        }
 //    }
 
+    @SuppressLint("StaticFieldLeak")
     fun addPicture(pictureList : List<PictureEntity>){
-        val insertTask= @SuppressLint("StaticFieldLeak")
         object: AsyncTask<Unit, Unit, Unit>(){
             override fun doInBackground(vararg params: Unit?) {
                 for (picture in pictureList){
                     pictureDB.getPictureDao().insert(picture)
+                    Log.d(TAG, picture.toString())
                 }
             }
 
@@ -155,6 +159,6 @@ class PictureScanHelper(private val context: Context) {
                 super.onPostExecute(result)
                 // TODO : DB에 사진 추가한 후 액션
             }
-        }
+        }.execute()
     }
 }
