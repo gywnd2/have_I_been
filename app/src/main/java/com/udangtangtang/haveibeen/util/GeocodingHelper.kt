@@ -11,13 +11,14 @@ import androidx.annotation.RequiresApi
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide.init
 import com.udangtangtang.haveibeen.util.PictureScanHelper
+import kotlinx.coroutines.*
 import java.io.IOException
 
 class GeocodingHelper(private val context: Context) {
     // TODO : 주소 수정 기능
     private var geocoder: Geocoder
-    private val TAG="GeocodingHelper"
-    private var result=""
+    private val TAG = "GeocodingHelper"
+    private var result = ""
 
     // AdminArea -> 특별, 광역시/도
     // Locality -> 시
@@ -25,18 +26,18 @@ class GeocodingHelper(private val context: Context) {
     // Thoroughfare -> 읍/면/동/로
     init {
         // 역 지오코딩
-        geocoder=Geocoder(context)
-
+        geocoder = Geocoder(context)
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    fun getAddress(latitude : Double, longtitude: Double): String {
-        // Geocoder를 통해 주소 획득
-        geocoder.getFromLocation(latitude, longtitude, 10, object: Geocoder.GeocodeListener{
-            override fun onGeocode(addressList: MutableList<Address>) {
-                 result=addressList.get(0).getAddressLine(0).substring(5)
-                 Log.d(TAG, "!!!!!!!"+result)
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    fun getAddress(latitude: Double, longtitude: Double): String {
+        // Geocoder를 통해 주소 획득
+        geocoder.getFromLocation(latitude, longtitude, 10, object : Geocoder.GeocodeListener {
+            override fun onGeocode(addressList: MutableList<Address>) {
+                result=addressList.get(0).getAddressLine(0)
+//                result = addressList.get(0).getAddressLine(0).substring(5)
+//                Log.d(TAG, result)
 //                var result=""
 //                Log.d(TAG, "!!!!!!!addressList:"+addressList.toString())
 //                if (addressList.isNotEmpty()) {
@@ -70,7 +71,8 @@ class GeocodingHelper(private val context: Context) {
                 super.onError(errorMessage)
             }
         })
-        Log.d(TAG, "return address : "+result)
-        return result!!
+
+        Log.d(TAG, "return address : " + result)
+        return result
     }
 }

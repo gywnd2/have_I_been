@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
     private lateinit var mInfoWindow: InfoWindow
     private var pictureList=ArrayList<String>()
     private val permissionHelper=PermissionHelper()
-    private lateinit var markers: ArrayList<Marker?>
+    private lateinit var markers: MutableList<Marker>
     private lateinit var selectedLatLng: Array<Double>
     private lateinit var pictureScanHelper: PictureScanHelper
     private var backKeyTime: Long = 0
@@ -57,6 +57,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setTitle(R.string.app_name)
+
+        pictureDB= PictureDatabase.getInstance(this)!!
+        recordDB= RecordDatabase.getInstance(this)!!
 
         // 외부 저장소 권한 요청
         val requestPermissionLauncher=registerForActivityResult(RequestPermission()){
@@ -72,9 +75,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         when {
             ContextCompat.checkSelfPermission(
                 this, android.Manifest.permission.READ_MEDIA_IMAGES)==PackageManager.PERMISSION_GRANTED->{
-                pictureDB= PictureDatabase.getInstance(this)!!
-                recordDB= RecordDatabase.getInstance(this)!!
-
                 // 사진 스캔
                 // ACCESS_MEDIA_LOCATION 권한 획득
                 when{
@@ -117,17 +117,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         // DB로부터 마커 추가
         pictureList=pictureDB.getPictureDao().getFileList() as ArrayList<String>
         Log.d(TAG, pictureDB.getPictureDao().getPictureNumbers().toString())
-        if (permissionHelper.checkPermissionGranted(this, permission.READ_EXTERNAL_STORAGE)) {
-            markers = arrayListOf<Marker?>()
+        if (pictureDB.getPictureDao().getPictureNumbers()>0) {
+            markers = mutableListOf<Marker>()
+            Log.d(TAG, markers.size.toString())
             for (i in 0 until pictureDB.getPictureDao().getPictureNumbers()){
-                markers[i]=Marker()
+                val marker=Marker()
                 val latLng=pictureDB.getPictureDao().getPictureLatLng(pictureList.get(i))
-                Log.d(TAG, "Add Marker at :"+ latLng.toTypedArray().toString())
-                markers[i]!!.position=LatLng(latLng[0], latLng[1])
-                markers[i]!!.map=naverMap
+                Log.d(TAG, "Add Marker at :"+ latLng.latitude+"/"+latLng.longtitude)
+                marker.position=LatLng(latLng.latitude, latLng.longtitude)
+                marker.map=naverMap
 
                 // 마커 클릭 이벤트
-                markers[i]!!.onClickListener = this
+                marker.onClickListener = this
+
+                markers.add(i, marker)
             }
 
         }

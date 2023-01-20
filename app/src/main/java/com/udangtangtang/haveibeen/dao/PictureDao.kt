@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
+import com.udangtangtang.haveibeen.entity.LatLngTuple
 import com.udangtangtang.haveibeen.entity.PictureEntity
 
 @Dao
@@ -20,7 +21,7 @@ interface PictureDao {
     @Query("SELECT fileName FROM pictureDB")
     fun getFileList() : List<String>
     @Query("SELECT latitude, longtitude FROM pictureDB WHERE fileName LIKE :absoluteFilePath")
-    fun getPictureLatLng(absoluteFilePath : String) : DoubleArray
+    fun getPictureLatLng(absoluteFilePath : String) : LatLngTuple
     @Query("SELECT COUNT(locationName) FROM pictureDB")
     fun getAddressCount() : List<String>
 }

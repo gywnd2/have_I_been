@@ -3,6 +3,7 @@ package com.udangtangtang.haveibeen.util
 import android.annotation.SuppressLint
 import android.content.*
 import android.icu.text.SimpleDateFormat
+import android.location.Geocoder
 import android.os.Build
 import android.net.Uri
 import android.os.AsyncTask
@@ -14,6 +15,8 @@ import androidx.annotation.RequiresApi
 import androidx.exifinterface.media.ExifInterface
 import com.udangtangtang.haveibeen.database.PictureDatabase
 import com.udangtangtang.haveibeen.entity.PictureEntity
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import java.lang.NullPointerException
 
@@ -26,10 +29,11 @@ class PictureScanHelper(private val context: Context) {
 
     init{
         pictureDB= PictureDatabase.getInstance(context)!!
+        geocodingHelper= GeocodingHelper(context)
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    fun scanPictures() {
+     fun scanPictures() {
         val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         val projection = arrayOf(MediaStore.MediaColumns._ID,
                                 MediaStore.MediaColumns.DATA,
@@ -55,7 +59,7 @@ class PictureScanHelper(private val context: Context) {
                     // 위/경도, 일시, 주소 얻기
                     var latLong: DoubleArray? = null
                     val datetime: String?
-                    var address: String? = null
+                    var address: String=""
                     var photoUri = Uri.withAppendedPath(
                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                         cursor.getString(idColumnIndex)
@@ -69,13 +73,12 @@ class PictureScanHelper(private val context: Context) {
                     }
 
                     // 좌표 정보를 통해 주소를 얻고 이를 파일명, 위/경도 정보, 촬영 일시 등을 모두 DB에 추가
-                    geocodingHelper = GeocodingHelper(context)
+//                    geocodingHelper = GeocodingHelper(context)
                     if (latLong?.isNotEmpty() == true) {
                         address = geocodingHelper!!.getAddress(latLong!!.get(0), latLong!!.get(1))
-                        Log.i(TAG, "Image " + address)
                     } else {
                         // 좌표 정보가 없을 경우
-                        Log.i(
+                        Log.d(
                             TAG,
                             "Image " + absolutePathOfImage + " has no coordination info."
                         )
@@ -106,9 +109,10 @@ class PictureScanHelper(private val context: Context) {
                 }
                 */
 
-                    addPicture(pictureList)
+
                 }
             }
+            addPicture(pictureList)
         }
     }
 
