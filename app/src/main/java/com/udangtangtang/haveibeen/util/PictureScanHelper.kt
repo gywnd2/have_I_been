@@ -1,6 +1,7 @@
 package com.udangtangtang.haveibeen.util
 
 import android.annotation.SuppressLint
+import android.app.Application
 import android.content.*
 import android.icu.text.SimpleDateFormat
 import android.location.Geocoder
@@ -13,32 +14,39 @@ import android.text.TextUtils
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.exifinterface.media.ExifInterface
+import com.bumptech.glide.Glide.init
+import com.udangtangtang.haveibeen.InitScanDialogFragment
 import com.udangtangtang.haveibeen.database.PictureDatabase
 import com.udangtangtang.haveibeen.entity.PictureEntity
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
+import com.udangtangtang.haveibeen.repository.RecordRepository
+import kotlinx.coroutines.*
 import java.io.IOException
 import java.lang.NullPointerException
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 class PictureScanHelper(private val context: Context) {
     // TODO : 미디어 저장소 업데이트 감지, 동영상 스캔 추가, AsyncTask->Coroutine, 이전 버전?
     // https://developer.android.com/training/data-storage/shared/media?hl=ko#detect-updates-media-files
     private val TAG = "PictureScanHelper"
-    private lateinit var geocodingHelper: GeocodingHelper
-    private lateinit var pictureDB: PictureDatabase
+    private var geocodingHelper: GeocodingHelper
+    private val db:RecordRepository
 
     init{
-        pictureDB= PictureDatabase.getInstance(context)!!
+        db=RecordRepository(context as Application)
         geocodingHelper= GeocodingHelper(context)
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-     fun scanPictures() {
+    fun scanPictures() {
         val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         val projection = arrayOf(MediaStore.MediaColumns._ID,
                                 MediaStore.MediaColumns.DATA,
                                 MediaStore.MediaColumns.DISPLAY_NAME,
-                                MediaStore.MediaColumns.DATE_TAKEN)
+                                MediaStore.MediaColumns.DATE_ADDED)
         val selectionArgs = arrayOf(
             dateToTimestamp(day = 1, month = 1, year = 1970).toString())
         val cursor = context.contentResolver.query(
@@ -55,11 +63,19 @@ class PictureScanHelper(private val context: Context) {
                     cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
                 val nameOfFile =
                     cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME))
+                var datetime=
+                    cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED))
                 if (!TextUtils.isEmpty(absolutePathOfImage)) {
                     // 위/경도, 일시, 주소 얻기
                     var latLong: DoubleArray? = null
-                    val datetime: String?
-                    var address: String=""
+                    var address=""
+                    datetime=DateTimeFormatter.ofPattern("yyyy년 M월 dd일 HH:mm").format(
+                        LocalDateTime.ofInstant(Instant.ofEpochMilli(datetime.toLong() * 1000), ZoneOffset.UTC)
+//                        Instant.ofEpochMilli(
+//                            datetime.toLong() * 1000)
+//                            .atZone(ZoneId.systemDefault())
+//                            .toLocalDate())
+                    )
                     var photoUri = Uri.withAppendedPath(
                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                         cursor.getString(idColumnIndex)
@@ -68,7 +84,7 @@ class PictureScanHelper(private val context: Context) {
                     context.contentResolver.openInputStream(photoUri)?.use { stream ->
                         val exifInterface=ExifInterface(stream).run {
                             latLong = this.latLong
-                            datetime = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_TAKEN))
+//                            datetime = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED))
                         }
                     }
 
@@ -76,6 +92,7 @@ class PictureScanHelper(private val context: Context) {
 //                    geocodingHelper = GeocodingHelper(context)
                     if (latLong?.isNotEmpty() == true) {
                         address = geocodingHelper!!.getAddress(latLong!!.get(0), latLong!!.get(1))
+                        Log.d(TAG, address)
                     } else {
                         // 좌표 정보가 없을 경우
                         Log.d(
@@ -83,16 +100,18 @@ class PictureScanHelper(private val context: Context) {
                             "Image " + absolutePathOfImage + " has no coordination info."
                         )
                     }
-
+                    Log.d(TAG, datetime)
                     if (latLong?.isNotEmpty() == true) {
                         val picture = PictureEntity(
-                            absolutePathOfImage,
-                            address!!,
-                            null,
-                            null,
                             latLong!!.get(0),
-                            latLong!!.get(1)
+                            latLong!!.get(1),
+                            nameOfFile,
+                            address,
+                            datetime,
+                            null,
+                            null,
                         )
+                        Log.d(TAG, picture.toString())
                         pictureList.add(picture)
                     }
 
@@ -112,7 +131,7 @@ class PictureScanHelper(private val context: Context) {
 
                 }
             }
-            addPicture(pictureList)
+            db.addPicture(pictureList)
         }
     }
 
@@ -149,20 +168,5 @@ class PictureScanHelper(private val context: Context) {
 //        }
 //    }
 
-    @SuppressLint("StaticFieldLeak")
-    fun addPicture(pictureList : List<PictureEntity>){
-        object: AsyncTask<Unit, Unit, Unit>(){
-            override fun doInBackground(vararg params: Unit?) {
-                for (picture in pictureList){
-                    pictureDB.getPictureDao().insert(picture)
-                    Log.d(TAG, picture.toString())
-                }
-            }
 
-            override fun onPostExecute(result: Unit?) {
-                super.onPostExecute(result)
-                // TODO : DB에 사진 추가한 후 액션
-            }
-        }.execute()
-    }
 }

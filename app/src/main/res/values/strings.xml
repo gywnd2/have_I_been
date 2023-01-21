@@ -38,4 +38,5 @@
     <string name="no_datetime_info">시간/날짜 정보가 없습니다.</string>
     <string name="backkeypressed">뒤로가기를 한번 더 누르면 종료됩니다.</string>
     <string name="saved">저장했습니다.</string>
+    <string name="alert_scan_pictures">사진을 스캔 중입니다. 잠시만 기다려 주세요.</string>
 </resources>

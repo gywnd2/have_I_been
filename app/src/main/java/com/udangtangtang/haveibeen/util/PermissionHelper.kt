@@ -8,10 +8,6 @@ import androidx.core.app.ActivityCompat
 import com.udangtangtang.haveibeen.MainActivity
 
 class PermissionHelper {
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    /* 권한 확인 및 요청
-    /  https://3001ssw.tistory.com/191
-    */
     // 권한 확인
     fun checkPermissionGranted(context: Context?, permissionName: String?): Boolean {
         var isPermissionGranted = true
@@ -30,6 +26,7 @@ class PermissionHelper {
                     true
                 }
         }
+        
         return isPermissionGranted
     }
 

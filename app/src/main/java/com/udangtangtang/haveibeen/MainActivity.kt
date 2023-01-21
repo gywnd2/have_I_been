@@ -20,6 +20,7 @@ import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import android.icu.text.AlphabeticIndex.Record
 import android.os.Build
 import android.util.Log
 import android.view.View
@@ -34,23 +35,25 @@ import com.udangtangtang.haveibeen.databinding.MarkerInfowindowBinding
 import com.udangtangtang.haveibeen.entity.RecordEntity
 import com.udangtangtang.haveibeen.database.PictureDatabase
 import com.udangtangtang.haveibeen.database.RecordDatabase
+import com.udangtangtang.haveibeen.repository.RecordRepository
+import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.IO
 import java.util.ArrayList
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickListener {
-    private lateinit var pictureDB: PictureDatabase
-    private lateinit var recordDB: RecordDatabase
+    // TODO : 주소 받아오기, 정보창 띄우기, 같은 장소 사진 처리, DB 코루틴, 초기 실행 시 사진 스캔(로딩화면?)
     private lateinit var binding: ActivityMainBinding
     private lateinit var mLocationSource: FusedLocationSource
     private lateinit var mNaverMap: NaverMap
     private lateinit var uiSettings: UiSettings
     private lateinit var mInfoWindow: InfoWindow
-    private var pictureList=ArrayList<String>()
-    private val permissionHelper=PermissionHelper()
     private lateinit var markers: MutableList<Marker>
     private lateinit var selectedLatLng: Array<Double>
     private lateinit var pictureScanHelper: PictureScanHelper
     private var backKeyTime: Long = 0
     private val TAG="MainActivity"
+    private lateinit var scanDialog : InitScanDialogFragment
+    private lateinit var db : RecordRepository
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,8 +61,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         setContentView(binding.root)
         setTitle(R.string.app_name)
 
-        pictureDB= PictureDatabase.getInstance(this)!!
-        recordDB= RecordDatabase.getInstance(this)!!
+        // Init
+        db= RecordRepository(application)
+        scanDialog=InitScanDialogFragment()
 
         // 외부 저장소 권한 요청
         val requestPermissionLauncher=registerForActivityResult(RequestPermission()){
@@ -71,6 +75,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                 }
         }
 
+
         // READ_MEDIA_IMAGES 권한 획득
         when {
             ContextCompat.checkSelfPermission(
@@ -79,9 +84,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                 // ACCESS_MEDIA_LOCATION 권한 획득
                 when{
                     ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_MEDIA_LOCATION)==PackageManager.PERMISSION_GRANTED->{
-                        Toast.makeText(this, "사진 스캔 시작", Toast.LENGTH_LONG).show()
-                        pictureScanHelper = PictureScanHelper(this)
-                        pictureScanHelper!!.scanPictures()
+                        scanDialog.show(supportFragmentManager, "InitScanDialog")
+                        CoroutineScope(Dispatchers.IO).launch {
+                            async(IO) {
+                                pictureScanHelper = PictureScanHelper(applicationContext)
+                                pictureScanHelper.scanPictures()
+                            }.await()
+                            Log.d(TAG, "dialog close")
+                            scanDialog.dismiss()
+                            runOnUiThread {
+                                binding.mainMapView.getMapAsync(this@MainActivity)
+                            }
+                        }
                     }
                     else->{
                         requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_MEDIA_LOCATION)
@@ -96,7 +110,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         }
 
         // mapView 초기화
-        binding.mainMapView.getMapAsync(this)
         mLocationSource = FusedLocationSource(this, PERMISSION_REQUEST_CODE)
 
         // Floating Button (Settings)
@@ -115,14 +128,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
     @UiThread
     override fun onMapReady(naverMap: NaverMap) {
         // DB로부터 마커 추가
-        pictureList=pictureDB.getPictureDao().getFileList() as ArrayList<String>
-        Log.d(TAG, pictureDB.getPictureDao().getPictureNumbers().toString())
-        if (pictureDB.getPictureDao().getPictureNumbers()>0) {
+        Log.d(TAG, db.getTotalPictureCount().toString())
+        val pictureCount=db.getTotalPictureCount()
+        val pictureList=db.getPictureList()
+        if (pictureCount>0) {
             markers = mutableListOf<Marker>()
             Log.d(TAG, markers.size.toString())
-            for (i in 0 until pictureDB.getPictureDao().getPictureNumbers()){
+            for (i in 0 until pictureCount){
                 val marker=Marker()
-                val latLng=pictureDB.getPictureDao().getPictureLatLng(pictureList.get(i))
+                val latLng=db.getPictureCoordination(pictureList.get(i))
                 Log.d(TAG, "Add Marker at :"+ latLng.latitude+"/"+latLng.longtitude)
                 marker.position=LatLng(latLng.latitude, latLng.longtitude)
                 marker.map=naverMap
@@ -156,9 +170,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
 
                 // 가져온 데이터로 뷰 만들기
                 val infowindowBinding = MarkerInfowindowBinding.inflate(layoutInflater)
-                val record : RecordEntity =recordDB.getRecordDao().getRecord(selectedLatLng.get(0), selectedLatLng.get(1))
+                val record=db.getRecord(selectedLatLng.get(0), selectedLatLng.get(1))
+                Log.d(TAG, record.toString())
                 if (record.locationName==null) infowindowBinding.infoWindowLocationTitle.text=getString(R.string.record_detail_no_locName) else infowindowBinding.infoWindowLocationTitle.text=record.locationName
-                if (record.latitude==null || record.longtitude==null) infowindowBinding.infoWindowLocationAddress.text=getString(R.string.no_location_info) else infowindowBinding.infoWindowLocationAddress.text=record.address
+                if (record.address==null) infowindowBinding.infoWindowLocationAddress.text=getString(R.string.no_location_info) else infowindowBinding.infoWindowLocationAddress.text=record.address
                 if (record.datetime==null) infowindowBinding.infoWindowDatetime.text=getString(R.string.no_datetime_info) else infowindowBinding.infoWindowDatetime.text=record.datetime
                 if (record.comment==null) infowindowBinding.infoWindowComment.text=getString(R.string.record_detail_no_comment) else infowindowBinding.infoWindowComment.text=record.comment
                 if (record.rating==null) infowindowBinding.infoWindowRatingBar.rating=0.0.toFloat() else infowindowBinding.infoWindowRatingBar.rating=
@@ -243,4 +258,5 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         // 권한 요청에 대한 응답 코드
         private const val REQ_PERMISSION_CALLBACK = 100
     }
+
 }

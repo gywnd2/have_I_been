@@ -3,7 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="10dp">
 
 
     <TextView
@@ -13,6 +14,7 @@
         android:layout_gravity="center_horizontal"
         android:gravity="center_horizontal"
         android:textStyle="bold"
+        android:textColor="@color/black"
         android:textSize="15sp" />
 
     <RatingBar
@@ -32,7 +34,9 @@
         android:layout_gravity="center_horizontal"
         android:gravity="center_horizontal"
         android:textStyle="bold"
-        android:textSize="15sp" />
+        android:text="주소"
+        android:textSize="15sp"
+        android:textColor="@color/black"/>
 
     <TextView
         android:id="@+id/infoWindow_datetime"
@@ -41,6 +45,7 @@
         android:layout_gravity="center_horizontal"
         android:gravity="center_horizontal"
         android:textStyle="bold"
+        android:textColor="@color/black"
         android:textSize="15sp" />
 
     <TextView

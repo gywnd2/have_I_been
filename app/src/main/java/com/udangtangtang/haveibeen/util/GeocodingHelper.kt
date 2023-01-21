@@ -12,6 +12,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide.init
 import com.udangtangtang.haveibeen.util.PictureScanHelper
 import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.IO
 import java.io.IOException
 
 class GeocodingHelper(private val context: Context) {
@@ -33,11 +34,12 @@ class GeocodingHelper(private val context: Context) {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun getAddress(latitude: Double, longtitude: Double): String {
         // Geocoder를 통해 주소 획득
-        geocoder.getFromLocation(latitude, longtitude, 10, object : Geocoder.GeocodeListener {
-            override fun onGeocode(addressList: MutableList<Address>) {
-                result=addressList.get(0).getAddressLine(0)
-//                result = addressList.get(0).getAddressLine(0).substring(5)
-//                Log.d(TAG, result)
+        CoroutineScope(Dispatchers.IO).launch{
+            async(IO){
+                geocoder.getFromLocation(latitude, longtitude, 10, object : Geocoder.GeocodeListener {
+                    override fun onGeocode(addressList: MutableList<Address>) {
+                        result = addressList.get(0).getAddressLine(0).substring(5)
+                        Log.d(TAG, result)
 //                var result=""
 //                Log.d(TAG, "!!!!!!!addressList:"+addressList.toString())
 //                if (addressList.isNotEmpty()) {
@@ -65,14 +67,19 @@ class GeocodingHelper(private val context: Context) {
 //                    }
 //                    Log.d(TAG, "!!!!!!!"+result)
 //                }
-            }
+                    }
 
-            override fun onError(errorMessage: String?) {
-                super.onError(errorMessage)
-            }
-        })
+                    override fun onError(errorMessage: String?) {
+                        super.onError(errorMessage)
+                    }
+                })
 
+
+            }.await()
+        }
         Log.d(TAG, "return address : " + result)
         return result
+
+
     }
 }
