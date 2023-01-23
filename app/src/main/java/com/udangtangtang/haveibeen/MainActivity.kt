@@ -22,6 +22,7 @@ import android.database.Cursor
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.icu.text.AlphabeticIndex.Record
 import android.os.Build
+import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import com.naver.maps.map.LocationTrackingMode
@@ -47,8 +48,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
     private lateinit var mNaverMap: NaverMap
     private lateinit var uiSettings: UiSettings
     private lateinit var mInfoWindow: InfoWindow
-    private lateinit var markers: MutableList<Marker>
-    private lateinit var selectedLatLng: Array<Double>
     private lateinit var pictureScanHelper: PictureScanHelper
     private var backKeyTime: Long = 0
     private val TAG="MainActivity"
@@ -83,8 +82,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                 // 사진 스캔
                 // ACCESS_MEDIA_LOCATION 권한 획득
                 when{
+
                     ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_MEDIA_LOCATION)==PackageManager.PERMISSION_GRANTED->{
                         scanDialog.show(supportFragmentManager, "InitScanDialog")
+//                        if (MediaStore.getVersion(this, MediaStore.getExternalVolumeNames(this))=="dd")
                         CoroutineScope(Dispatchers.IO).launch {
                             async(IO) {
                                 pictureScanHelper = PictureScanHelper(applicationContext)
@@ -132,7 +133,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         val pictureCount=db.getTotalPictureCount()
         val pictureList=db.getPictureList()
         if (pictureCount>0) {
-            markers = mutableListOf<Marker>()
+            val markers = mutableListOf<Marker>()
             Log.d(TAG, markers.size.toString())
             for (i in 0 until pictureCount){
                 val marker=Marker()
@@ -159,7 +160,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                 val marker = infoWindow.marker
 
                 // 인텐트로 상세조회 페이지에 넘겨주기 위한 위/경도 기록
-                selectedLatLng = arrayOf(
+                val selectedLatLng = arrayOf(
                     marker!!.position.latitude,
                     marker!!.position.longitude
                 )
@@ -167,6 +168,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                 // 위/경도로 정보창 데이터 가져오기
 //                val infoWindowData : InfoWindowD
 //                infoWindowData = dbHelper!!.getInfoWindowData(selectedLatLng)
+
 
                 // 가져온 데이터로 뷰 만들기
                 val infowindowBinding = MarkerInfowindowBinding.inflate(layoutInflater)

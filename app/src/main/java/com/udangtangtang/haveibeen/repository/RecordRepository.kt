@@ -55,17 +55,33 @@ class RecordRepository(application: Application) {
         return pictureDao.getAddressCount()
     }
 
-    fun addPicture(pictureList : List<PictureEntity>){
+//    fun addPicture(pictureList : List<PictureEntity>){
+//        CoroutineScope(Dispatchers.IO).launch {
+//            for (picture in pictureList){
+//                if(!pictureDao.isExist(picture.fileName)){
+//                    pictureDao.insert(picture)
+//                    Log.d(TAG, picture.toString())
+//                }else{
+//                    Log.d(TAG, picture.fileName+" 은 이미 존재합니다.")
+//                }
+//            }
+//        }
+//    }
+
+    fun addPicture(picture : PictureEntity){
         CoroutineScope(Dispatchers.IO).launch {
-            for (picture in pictureList){
-                if(!pictureDao.isExist(picture.fileName)){
-                    pictureDao.insert(picture)
-                    Log.d(TAG, picture.toString())
-                }else{
-                    Log.d(TAG, picture.fileName+" 은 이미 존재합니다.")
-                }
+            if(!pictureDao.isExist(picture.fileName)){
+                pictureDao.insert(picture)
+                Log.d(TAG, picture.toString())
+            }else{
+                Log.d(TAG, picture.fileName+" 은 이미 존재합니다.")
             }
         }
+    }
+
+    fun updatePictureAddress(latitude: Double, longtitude: Double, address: String){
+        pictureDao.updateAddress(latitude, longtitude, address)
+        Log.d(TAG, "record address updated : "+pictureDao.getAddress(latitude, longtitude))
     }
 
     fun getTotalPictureCount() : Int{

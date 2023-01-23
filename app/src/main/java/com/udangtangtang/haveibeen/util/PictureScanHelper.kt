@@ -1,30 +1,21 @@
 package com.udangtangtang.haveibeen.util
 
-import android.annotation.SuppressLint
 import android.app.Application
 import android.content.*
 import android.icu.text.SimpleDateFormat
-import android.location.Geocoder
 import android.os.Build
 import android.net.Uri
 import android.os.AsyncTask
 import android.provider.MediaStore
-import android.provider.MediaStore.Images.Media
 import android.text.TextUtils
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.exifinterface.media.ExifInterface
-import com.bumptech.glide.Glide.init
-import com.udangtangtang.haveibeen.InitScanDialogFragment
-import com.udangtangtang.haveibeen.database.PictureDatabase
 import com.udangtangtang.haveibeen.entity.PictureEntity
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import kotlinx.coroutines.*
-import java.io.IOException
-import java.lang.NullPointerException
 import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
@@ -91,28 +82,24 @@ class PictureScanHelper(private val context: Context) {
                     // 좌표 정보를 통해 주소를 얻고 이를 파일명, 위/경도 정보, 촬영 일시 등을 모두 DB에 추가
 //                    geocodingHelper = GeocodingHelper(context)
                     if (latLong?.isNotEmpty() == true) {
-                        address = geocodingHelper!!.getAddress(latLong!!.get(0), latLong!!.get(1))
-                        Log.d(TAG, address)
+                        val picture = PictureEntity(
+                            latLong!!.get(0),
+                            latLong!!.get(1),
+                            nameOfFile,
+                            null,
+                            datetime,
+                            null,
+                            null,
+                        )
+                        pictureList.add(picture)
+                        geocodingHelper!!.getAddress(latLong!!.get(0), latLong!!.get(1))
+                        db.addPicture(picture)
                     } else {
                         // 좌표 정보가 없을 경우
                         Log.d(
                             TAG,
                             "Image " + absolutePathOfImage + " has no coordination info."
                         )
-                    }
-                    Log.d(TAG, datetime)
-                    if (latLong?.isNotEmpty() == true) {
-                        val picture = PictureEntity(
-                            latLong!!.get(0),
-                            latLong!!.get(1),
-                            nameOfFile,
-                            address,
-                            datetime,
-                            null,
-                            null,
-                        )
-                        Log.d(TAG, picture.toString())
-                        pictureList.add(picture)
                     }
 
 
@@ -131,7 +118,6 @@ class PictureScanHelper(private val context: Context) {
 
                 }
             }
-            db.addPicture(pictureList)
         }
     }
 

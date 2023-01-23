@@ -9,7 +9,7 @@ data class PictureEntity(
     @ColumnInfo val latitude: Double,
     @ColumnInfo val longtitude: Double,
     @ColumnInfo val fileName: String,
-    @ColumnInfo val address: String,
+    @ColumnInfo val address: String?,
     @ColumnInfo val datetime : String,
     @ColumnInfo var rating: Float?,
     @ColumnInfo var comment: String?,

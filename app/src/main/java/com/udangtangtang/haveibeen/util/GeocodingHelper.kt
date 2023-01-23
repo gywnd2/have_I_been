@@ -1,5 +1,6 @@
 package com.udangtangtang.haveibeen.util
 
+import android.app.Application
 import android.content.*
 import android.location.Geocoder
 import android.widget.Toast
@@ -10,16 +11,19 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide.init
+import com.udangtangtang.haveibeen.repository.RecordRepository
 import com.udangtangtang.haveibeen.util.PictureScanHelper
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import java.io.IOException
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class GeocodingHelper(private val context: Context) {
     // TODO : 주소 수정 기능
     private var geocoder: Geocoder
     private val TAG = "GeocodingHelper"
-    private var result = ""
+    private var db=RecordRepository(context as Application)
+    var result=""
 
     // AdminArea -> 특별, 광역시/도
     // Locality -> 시
@@ -28,18 +32,28 @@ class GeocodingHelper(private val context: Context) {
     init {
         // 역 지오코딩
         geocoder = Geocoder(context)
+//        geocoder.getFromLocation(0.0, 0.0, 10, object:Geocoder.GeocodeListener{
+//            override fun onGeocode(addresses: MutableList<Address>) {
+//                TODO("Not yet implemented")
+//            }
+//
+//            override fun onError(errorMessage: String?) {
+//                super.onError(errorMessage)
+//            }
+//        })
     }
 
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    fun getAddress(latitude: Double, longtitude: Double): String {
+    fun getAddress(latitude: Double, longtitude: Double):String {
         // Geocoder를 통해 주소 획득
-        CoroutineScope(Dispatchers.IO).launch{
-            async(IO){
-                geocoder.getFromLocation(latitude, longtitude, 10, object : Geocoder.GeocodeListener {
-                    override fun onGeocode(addressList: MutableList<Address>) {
-                        result = addressList.get(0).getAddressLine(0).substring(5)
-                        Log.d(TAG, result)
+        geocoder.getFromLocation(
+            latitude,
+            longtitude,
+            3,
+            object : Geocoder.GeocodeListener {
+                override fun onGeocode(addressList: MutableList<Address>) {
+                    db.updatePictureAddress(latitude, longtitude, addressList.get(0).getAddressLine(0).substring(5))
 //                var result=""
 //                Log.d(TAG, "!!!!!!!addressList:"+addressList.toString())
 //                if (addressList.isNotEmpty()) {
@@ -67,19 +81,16 @@ class GeocodingHelper(private val context: Context) {
 //                    }
 //                    Log.d(TAG, "!!!!!!!"+result)
 //                }
-                    }
 
-                    override fun onError(errorMessage: String?) {
-                        super.onError(errorMessage)
-                    }
-                })
+                }
 
-
-            }.await()
-        }
-        Log.d(TAG, "return address : " + result)
+                override fun onError(errorMessage: String?) {
+                    super.onError(errorMessage)
+                }
+            })
+                Log.d(TAG, "return address : " + result)
         return result
+        }
 
 
     }
-}

@@ -29,4 +29,6 @@ interface PictureDao {
     fun getAddress(lat:Double, lng:Double):String
     @Query("SELECT EXISTS (SELECT * FROM pictureDB WHERE fileName =:name)")
     fun isExist(name : String) : Boolean
+    @Query("UPDATE pictureDB SET address =:addr WHERE latitude =:lat AND longtitude =:lng")
+    fun updateAddress(lat:Double, lng: Double, addr : String)
 }
