@@ -19,6 +19,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class PictureScanHelper(private val context: Context) {
     // TODO : 미디어 저장소 업데이트 감지, 동영상 스캔 추가, AsyncTask->Coroutine, 이전 버전?
     // https://developer.android.com/training/data-storage/shared/media?hl=ko#detect-updates-media-files
@@ -81,7 +82,8 @@ class PictureScanHelper(private val context: Context) {
 
                     // 좌표 정보를 통해 주소를 얻고 이를 파일명, 위/경도 정보, 촬영 일시 등을 모두 DB에 추가
 //                    geocodingHelper = GeocodingHelper(context)
-                    if (latLong?.isNotEmpty() == true) {
+                    if (latLong?.isNotEmpty() == true
+                        and !db.isExistPicture(latLong!!.get(0), latLong!!.get(1), nameOfFile)) {
                         val picture = PictureEntity(
                             latLong!!.get(0),
                             latLong!!.get(1),
@@ -94,6 +96,7 @@ class PictureScanHelper(private val context: Context) {
                         pictureList.add(picture)
                         geocodingHelper!!.getAddress(latLong!!.get(0), latLong!!.get(1))
                         db.addPicture(picture)
+
                     } else {
                         // 좌표 정보가 없을 경우
                         Log.d(

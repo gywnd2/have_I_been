@@ -1,10 +1,13 @@
 # 가봤을지도?
 ### 21-2학기 모바일 앱 개발 Term project
-    Android Studio Arctic Fox(Java)
-    SQLite
-    --------------------------------------
-    Java -> Kotlin
-    SQLiteDatabase -> Room 으로 전환 중
+    Android (Kotlin)
+    Room DB
+    EncryptedSharedPreferences
+    MVVM
+    LiveData
+    ViewModel
+    ViewBinding
+    DataBinding
 
 ## 1. 사진 탐색
 - 내부 저장소 사진 탐색

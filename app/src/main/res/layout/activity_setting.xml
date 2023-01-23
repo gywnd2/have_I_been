@@ -6,37 +6,14 @@
     android:layout_height="match_parent"
     tools:context=".SettingActivity">
 
-    <TextView
-        android:id="@+id/setting_text_credit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/credit"
-        android:textSize="20sp"
-        android:textColor="@color/black"
-        android:textAlignment="center"
+
+    <WebView
+        android:id="@+id/setting_webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/setting_button_init_db"/>
-
-    <Button
-        android:id="@+id/setting_button_init_db"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/setting_button_init"
-        app:layout_constraintTop_toBottomOf="@id/setting_text_credit"
-        app:layout_constraintBottom_toTopOf="@id/setting_button_rescan"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
-
-    <Button
-        android:id="@+id/setting_button_rescan"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/setting_button_rescan"
-        app:layout_constraintTop_toBottomOf="@id/setting_button_init_db"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

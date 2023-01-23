@@ -17,15 +17,11 @@ import com.udangtangtang.haveibeen.databinding.ActivityRecordDetailBinding
 import java.io.IOException
 
 class RecordDetailActivity : AppCompatActivity() {
-    private var binding: ActivityRecordDetailBinding? = null
+    private var binding: ActivityRecordDetailBinding
     private lateinit var recordDB : RecordDatabase
-    private lateinit var selectedLatLng: Array<String?>
-    private var exifInterface: ExifInterface? = null
-    private var geocodingHelper: GeocodingHelper? = null
-    private var firstFileName: String? = null
-    private var dialog: AlertDialog? = null
-    private val addressList: List<Address>? = null
-    private var builder: AlertDialog.Builder? = null
+    private var dialog: AlertDialog
+    private var builder: AlertDialog.Builder
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRecordDetailBinding.inflate(

@@ -27,8 +27,8 @@ interface PictureDao {
     fun getAddressCount() : List<AddressRankTuple>
     @Query("SELECT address FROM pictureDB WHERE latitude =:lat AND longtitude =:lng")
     fun getAddress(lat:Double, lng:Double):String
-    @Query("SELECT EXISTS (SELECT * FROM pictureDB WHERE fileName =:name)")
-    fun isExist(name : String) : Boolean
+    @Query("SELECT EXISTS (SELECT * FROM pictureDB WHERE fileName =:name AND latitude =:lat AND longtitude =:lng)")
+    fun isExist(lat: Double, lng: Double, name:String) : Boolean
     @Query("UPDATE pictureDB SET address =:addr WHERE latitude =:lat AND longtitude =:lng")
     fun updateAddress(lat:Double, lng: Double, addr : String)
 }

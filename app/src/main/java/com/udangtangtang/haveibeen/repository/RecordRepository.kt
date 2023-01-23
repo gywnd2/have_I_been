@@ -70,18 +70,22 @@ class RecordRepository(application: Application) {
 
     fun addPicture(picture : PictureEntity){
         CoroutineScope(Dispatchers.IO).launch {
-            if(!pictureDao.isExist(picture.fileName)){
-                pictureDao.insert(picture)
-                Log.d(TAG, picture.toString())
-            }else{
-                Log.d(TAG, picture.fileName+" 은 이미 존재합니다.")
-            }
+            pictureDao.insert(picture)
+            Log.d(TAG, picture.toString())
         }
     }
 
+    fun isExistPicture(latitude: Double, longtitude: Double, fileName : String):Boolean{
+        return pictureDao.isExist(latitude, longtitude, fileName)
+    }
+
     fun updatePictureAddress(latitude: Double, longtitude: Double, address: String){
-        pictureDao.updateAddress(latitude, longtitude, address)
-        Log.d(TAG, "record address updated : "+pictureDao.getAddress(latitude, longtitude))
+        if(address!=null){
+            pictureDao.updateAddress(latitude, longtitude, address)
+            Log.d(TAG, "record address updated : "+pictureDao.getAddress(latitude, longtitude))
+        }else{
+            Log.d(TAG, "null address received")
+        }
     }
 
     fun getTotalPictureCount() : Int{

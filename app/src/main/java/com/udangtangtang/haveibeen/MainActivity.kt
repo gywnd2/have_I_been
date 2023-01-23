@@ -9,40 +9,33 @@ import com.naver.maps.map.UiSettings
 import com.naver.maps.map.overlay.InfoWindow
 import com.udangtangtang.haveibeen.util.PictureScanHelper
 import android.os.Bundle
-import com.udangtangtang.haveibeen.util.PermissionHelper
 import android.Manifest.permission
+import android.Manifest.permission.*
 import android.content.Intent
+import android.content.SharedPreferences
 import androidx.annotation.UiThread
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.NaverMap.OnMapClickListener
 import android.graphics.PointF
 import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
-import android.database.Cursor
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import android.icu.text.AlphabeticIndex.Record
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import com.naver.maps.map.LocationTrackingMode
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.naver.maps.map.overlay.Marker
 import com.udangtangtang.haveibeen.databinding.ActivityMainBinding
 import com.udangtangtang.haveibeen.databinding.MarkerInfowindowBinding
-import com.udangtangtang.haveibeen.entity.RecordEntity
-import com.udangtangtang.haveibeen.database.PictureDatabase
-import com.udangtangtang.haveibeen.database.RecordDatabase
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
-import java.util.ArrayList
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickListener {
-    // TODO : 주소 받아오기, 정보창 띄우기, 같은 장소 사진 처리, DB 코루틴, 초기 실행 시 사진 스캔(로딩화면?)
+    // TODO : 같은 장소 사진 처리, DB 코루틴, 초기 실행 시 사진 스캔(로딩화면?),
     private lateinit var binding: ActivityMainBinding
     private lateinit var mLocationSource: FusedLocationSource
     private lateinit var mNaverMap: NaverMap
@@ -53,6 +46,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
     private val TAG="MainActivity"
     private lateinit var scanDialog : InitScanDialogFragment
     private lateinit var db : RecordRepository
+    private lateinit var sharedPreferences: SharedPreferences
+
+    companion object {
+        private const val PERMISSION_REQUEST_CODE = 100
+        // 권한 요청에 대한 응답 코드
+        private const val REQ_PERMISSION_CALLBACK = 100
+    }
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,65 +65,30 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         db= RecordRepository(application)
         scanDialog=InitScanDialogFragment()
 
-        // 외부 저장소 권한 요청
-        val requestPermissionLauncher=registerForActivityResult(RequestPermission()){
-            isGranted: Boolean->
-                if(isGranted){
-                    Toast.makeText(this, "권한 획득", Toast.LENGTH_LONG).show()
-                }else{
-                    Toast.makeText(this, "권한 획득 실패", Toast.LENGTH_LONG).show()
-                }
+        scanDialog.show(supportFragmentManager, "InitScanDialog")
+        CoroutineScope(Dispatchers.IO).launch {
+            async(IO) {
+                pictureScanHelper = PictureScanHelper(applicationContext)
+                pictureScanHelper.scanPictures()
+            }.await()
+            Log.d(TAG, "dialog close")
+            scanDialog.dismiss()
         }
 
-
-        // READ_MEDIA_IMAGES 권한 획득
-        when {
-            ContextCompat.checkSelfPermission(
-                this, android.Manifest.permission.READ_MEDIA_IMAGES)==PackageManager.PERMISSION_GRANTED->{
-                // 사진 스캔
-                // ACCESS_MEDIA_LOCATION 권한 획득
-                when{
-
-                    ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_MEDIA_LOCATION)==PackageManager.PERMISSION_GRANTED->{
-                        scanDialog.show(supportFragmentManager, "InitScanDialog")
-//                        if (MediaStore.getVersion(this, MediaStore.getExternalVolumeNames(this))=="dd")
-                        CoroutineScope(Dispatchers.IO).launch {
-                            async(IO) {
-                                pictureScanHelper = PictureScanHelper(applicationContext)
-                                pictureScanHelper.scanPictures()
-                            }.await()
-                            Log.d(TAG, "dialog close")
-                            scanDialog.dismiss()
-                            runOnUiThread {
-                                binding.mainMapView.getMapAsync(this@MainActivity)
-                            }
-                        }
-                    }
-                    else->{
-                        requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_MEDIA_LOCATION)
-                    }
-                }
-
-            }
-            else->{
-                requestPermissionLauncher.launch(
-                    android.Manifest.permission.READ_MEDIA_IMAGES)
-            }
-        }
+        Toast.makeText(this, MediaStore.getGeneration(this, MediaStore.VOLUME_EXTERNAL).toString(), Toast.LENGTH_LONG).show()
 
         // mapView 초기화
+        binding.mainMapView.getMapAsync(this)
         mLocationSource = FusedLocationSource(this, PERMISSION_REQUEST_CODE)
 
         // Floating Button (Settings)
-//        binding.mainFabSettings.setOnClickListener(View.OnClickListener {
-//            val intent = Intent(applicationContext, SettingActivity::class.java)
-//            startActivity(intent)
-//        })
+        binding.mainFabSettings.setOnClickListener(View.OnClickListener {
+            startActivity(Intent(this, SettingActivity::class.java))
+        })
 
 //         Floating Button (Ranking), 클릭 시 랭킹 액티비티 전환
         binding.mainFabRanking.setOnClickListener(View.OnClickListener {
-            val intent = Intent(applicationContext, RankingActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, RankingActivity::class.java))
         })
     }
 
@@ -152,6 +118,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
 
         // 마커 정보창 생성
         mInfoWindow = InfoWindow()
+        var selectedLatLng= mutableListOf<Double>()
 
         // 정보창 어댑터 설정
         mInfoWindow!!.adapter = object : InfoWindow.DefaultViewAdapter(this) {
@@ -160,15 +127,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                 val marker = infoWindow.marker
 
                 // 인텐트로 상세조회 페이지에 넘겨주기 위한 위/경도 기록
-                val selectedLatLng = arrayOf(
-                    marker!!.position.latitude,
-                    marker!!.position.longitude
-                )
-
-                // 위/경도로 정보창 데이터 가져오기
-//                val infoWindowData : InfoWindowD
-//                infoWindowData = dbHelper!!.getInfoWindowData(selectedLatLng)
-
+                selectedLatLng.add(0, marker!!.position.latitude)
+                selectedLatLng.add(1, marker!!.position.longitude)
 
                 // 가져온 데이터로 뷰 만들기
                 val infowindowBinding = MarkerInfowindowBinding.inflate(layoutInflater)
@@ -186,9 +146,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
 
         // 정보창 클릭 이벤트
 //        mInfoWindow!!.onClickListener = Overlay.OnClickListener { // 정보창 클릭 시 정보 상세정보 확인 액티비티 전환
-//            val intent = Intent(binding!!.root.context, RecordDetailActivity::class.java)
+//            val intent = Intent(this, RecordDetailActivity::class.java)
 //            // 인텐트에 위/경도를 첨부해서 전달
-//            intent.putExtra("selectedLatLng", selectedLatLng)
+//            intent.putExtra("selectedLatLng", selectedLatLng as DoubleArray)
 //            startActivity(intent)
 //            false
 //        }
@@ -205,7 +165,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         // 위치 확인을 위한 locationSource와 권한 요청
         mNaverMap = naverMap
         naverMap.locationSource = mLocationSource
-        ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_REQUEST_CODE)
     }
 
     // 지도 권한 요청 콜백 메소드
@@ -250,15 +209,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         }
     }
 
-    companion object {
-        private const val PERMISSION_REQUEST_CODE = 100
-        private val PERMISSIONS = arrayOf(
-            permission.ACCESS_FINE_LOCATION,
-            permission.ACCESS_COARSE_LOCATION
-        )
 
-        // 권한 요청에 대한 응답 코드
-        private const val REQ_PERMISSION_CALLBACK = 100
-    }
+
 
 }
