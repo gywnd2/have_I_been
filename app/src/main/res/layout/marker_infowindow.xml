@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".RecordDetailActivity">
 
     <data>
         <variable
@@ -14,7 +16,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="10dp">
-
 
         <TextView
             android:id="@+id/infoWindow_locationTitle"

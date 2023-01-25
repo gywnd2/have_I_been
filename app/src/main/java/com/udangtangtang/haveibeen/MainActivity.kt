@@ -1,6 +1,7 @@
 package com.udangtangtang.haveibeen
 
 import android.Manifest.permission.*
+import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -10,10 +11,13 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
+import android.view.ViewManager
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.naver.maps.geometry.LatLng
@@ -35,6 +39,7 @@ import kotlinx.coroutines.*
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickListener {
     // TODO : DB 코루틴, 초기 실행 시 사진 스캔(로딩화면?), 사진 변경 감지 어떻게?
     private lateinit var binding: ActivityMainBinding
+    private lateinit var infoWindowBinding : MarkerInfowindowBinding
     private lateinit var mLocationSource: FusedLocationSource
     private lateinit var mNaverMap: NaverMap
     private lateinit var uiSettings: UiSettings
@@ -123,7 +128,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                 marker.position=LatLng(latLng.latitude, latLng.longtitude)
                 marker.map=naverMap
                 // 마커 클릭 이벤트
-                marker.onClickListener = this
+                marker.onClickListener=this
                 markers.add(i, marker)
             }
 
@@ -131,22 +136,34 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
 
         // 마커 정보창 생성
         mInfoWindow = InfoWindow()
+        infoWindowBinding = DataBindingUtil.inflate<MarkerInfowindowBinding>(layoutInflater, R.layout.marker_infowindow, binding.root, false)
         var selectedLatLng= DoubleArray(2)
 
         // 정보창 어댑터 설정
         mInfoWindow.adapter = object : InfoWindow.DefaultViewAdapter(this) {
-            override fun getContentView(infoWindow: InfoWindow): View {
+            override fun getContentView(p0: InfoWindow): View {
                 // 선택한 정보창에 해당하는 마커 객체 가져오기
-                val marker = infoWindow.marker
+                val marker = p0.marker
 
                 // 인텐트로 상세조회 페이지에 넘겨주기 위한 위/경도 기록
                 selectedLatLng[0]=marker!!.position.latitude
                 selectedLatLng[1]= marker.position.longitude
 
                 // 가져온 데이터로 뷰 만들기
-                val infowindowBinding = MarkerInfowindowBinding.inflate(layoutInflater)
-                infowindowBinding.infoWindowData=db.getRecord(selectedLatLng.get(0), selectedLatLng.get(1))
-                return infowindowBinding.root
+                val record=db.getRecord(selectedLatLng.get(0), selectedLatLng.get(1))\
+                // TODO: Fix
+//                with(infoWindowBinding){
+//                    infoWindowLocationTitle.text=record.locationName
+//                    if (record.rating==null) infoWindowRatingBar.rating=getString(R.string.no_rating).toFloat()
+//                    else infoWindowRatingBar.rating=record.rating!!
+//                    infoWindowLocationAddress.text=record.address
+//                    infoWindowDatetime.text=record.datetime
+//                    if (record.comment==null) infoWindowComment.text=getString(R.string.no_comment)
+//                    else infoWindowComment.text=record.comment
+//                }
+
+                Log.d(TAG, infoWindowBinding.infoWindowData.toString())
+                return infoWindowBinding.root
             }
         }
 
@@ -213,8 +230,5 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
             finish()
         }
     }
-
-
-
 
 }

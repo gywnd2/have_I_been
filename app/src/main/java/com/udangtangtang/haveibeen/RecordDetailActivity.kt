@@ -35,6 +35,7 @@ class RecordDetailActivity : AppCompatActivity() {
         // 데이터 가져오기
         var queryRecord=db.getRecord(selectedLatLng[0], selectedLatLng[1])
         binding.record=queryRecord
+        binding.isEditing=false
 
         // 액티비티 타이틀 설정
         title = if (queryRecord.locationName == null) getString(R.string.no_location_info) else queryRecord.locationName
@@ -74,6 +75,7 @@ class RecordDetailActivity : AppCompatActivity() {
                 builder.show()
             }else{
                 binding.isEditing=true
+                Toast.makeText(this, binding.isEditing.toString(),Toast.LENGTH_SHORT).show()
             }
 
         }
