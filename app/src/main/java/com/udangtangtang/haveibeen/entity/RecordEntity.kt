@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 data class RecordEntity(
     @ColumnInfo val latitude : Double,
     @ColumnInfo val longtitude : Double,
-    @ColumnInfo val locationName: String?,
+    @ColumnInfo var locationName: String?,
     @ColumnInfo val address : String,
     @ColumnInfo val datetime : String,
     @ColumnInfo var comment : String?,

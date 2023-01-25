@@ -2,6 +2,7 @@ package com.udangtangtang.haveibeen.util
 
 import android.app.Application
 import android.content.*
+import android.icu.text.AlphabeticIndex.Record
 import android.location.Geocoder
 import android.widget.Toast
 import android.location.Address
@@ -22,7 +23,7 @@ class GeocodingHelper(private val context: Context) {
     // TODO : 주소 수정 기능
     private var geocoder: Geocoder
     private val TAG = "GeocodingHelper"
-    private var db=RecordRepository(context as Application)
+    private val db : RecordRepository
     var result=""
 
     // AdminArea -> 특별, 광역시/도
@@ -32,15 +33,8 @@ class GeocodingHelper(private val context: Context) {
     init {
         // 역 지오코딩
         geocoder = Geocoder(context)
-//        geocoder.getFromLocation(0.0, 0.0, 10, object:Geocoder.GeocodeListener{
-//            override fun onGeocode(addresses: MutableList<Address>) {
-//                TODO("Not yet implemented")
-//            }
-//
-//            override fun onError(errorMessage: String?) {
-//                super.onError(errorMessage)
-//            }
-//        })
+        db=RecordRepository(context as Application)
+
     }
 
 

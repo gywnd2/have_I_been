@@ -17,8 +17,10 @@ interface PictureDao {
     fun delete(pictureEntity: PictureEntity)
     @Query("SELECT COUNT(*) FROM pictureDB")
     fun getPictureNumbers() : Int
-    @Query("SELECT fileName FROM pictureDB")
-    fun getFileList() : List<String>
+    @Query("SELECT fileName FROM pictureDB WHERE latitude =:lat AND longtitude =:lng")
+    fun getFileList(lat:Double, lng:Double) : List<String>
+    @Query("SELECT COUNT(fileName) FROM pictureDB WHERE latitude =:lat AND longtitude =:lng")
+    fun getFileCountOnLocation(lat:Double, lng:Double) : Int
     @Query("SELECT latitude, longtitude FROM pictureDB WHERE fileName =:absoluteFilePath")
     fun getPictureLatLng(absoluteFilePath : String) : LatLngTuple
     @Query("SELECT datetime FROM pictureDB WHERE latitude =:lat AND longtitude =:lng")

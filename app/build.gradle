@@ -35,6 +35,7 @@ android {
     }
     buildFeatures {
         viewBinding true
+        dataBinding true
     }
 }
 
@@ -63,6 +64,13 @@ dependencies {
 
     // Coroutine
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1"
+
+    // EncryptedSharedPreferences
+    implementation "androidx.security:security-crypto-ktx:1.1.0-alpha04"
+
+    // LiveData
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
+
 
     // Circleindicator3
     // https://github.com/ongakuer/CircleIndicator

@@ -106,19 +106,6 @@ class PictureScanHelper(private val context: Context) {
                     }
 
 
-                    // TODO : 이미 추가된 사진인지 확인
-                    /*
-                val params = arrayOf(absolutePathOfImage)
-                val cursor1 = sqlDB.rawQuery("select filen.me from myDB where filename=?;", params)
-                if (cursor1 != null && cursor1.moveToFirst()) {
-                    // 존재하면 pass
-                } else {
-                    // 존재하지 않으면 추가
-                    fileList.add(absolutePathOfImage)
-                }
-                */
-
-
                 }
             }
         }

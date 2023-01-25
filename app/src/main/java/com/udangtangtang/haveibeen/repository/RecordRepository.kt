@@ -96,7 +96,11 @@ class RecordRepository(application: Application) {
         return pictureDao.getPictureLatLng(filePath)
     }
 
-    fun getPictureList() : List<String>{
-        return pictureDao.getFileList()
+    fun getPictureList(latitude: Double, longtitude: Double) : List<String>{
+        return pictureDao.getFileList(latitude, longtitude)
+    }
+
+    fun getSpecificLocationPictureCount(latitude: Double, longtitude: Double):Int{
+        return pictureDao.getFileCountOnLocation(latitude, longtitude)
     }
 }

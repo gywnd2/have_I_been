@@ -27,6 +27,9 @@ import com.naver.maps.map.LocationTrackingMode
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.naver.maps.map.overlay.Marker
 import com.udangtangtang.haveibeen.databinding.ActivityMainBinding
 import com.udangtangtang.haveibeen.databinding.MarkerInfowindowBinding
@@ -52,6 +55,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         private const val PERMISSION_REQUEST_CODE = 100
         // 권한 요청에 대한 응답 코드
         private const val REQ_PERMISSION_CALLBACK = 100
+        private const val FILENAME="encrypted_pref"
+        private const val MEDIASTORE_GEN_ATTR="mediastore_gen"
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -64,18 +69,33 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         // Init
         db= RecordRepository(application)
         scanDialog=InitScanDialogFragment()
+        sharedPreferences= EncryptedSharedPreferences.create(
+            this,
+            FILENAME,
+            MasterKey.Builder(this).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
 
-        scanDialog.show(supportFragmentManager, "InitScanDialog")
-        CoroutineScope(Dispatchers.IO).launch {
-            async(IO) {
-                pictureScanHelper = PictureScanHelper(applicationContext)
-                pictureScanHelper.scanPictures()
-            }.await()
-            Log.d(TAG, "dialog close")
-            scanDialog.dismiss()
-        }
 
-        Toast.makeText(this, MediaStore.getGeneration(this, MediaStore.VOLUME_EXTERNAL).toString(), Toast.LENGTH_LONG).show()
+        pictureScanHelper = PictureScanHelper(applicationContext)
+        val gen=MediaStore.getGeneration(applicationContext, MediaStore.VOLUME_EXTERNAL).toString()
+        with(sharedPreferences){
+            if(getString(MEDIASTORE_GEN_ATTR, "null")!=gen){
+                scanDialog.show(supportFragmentManager, "InitScanDialog")
+                CoroutineScope(Dispatchers.IO).launch {
+                    async{
+                        edit().putString(MEDIASTORE_GEN_ATTR, gen)
+                        pictureScanHelper.scanPictures()
+                        }.await()
+                    scanDialog.dismiss()
+                    }
+                }
+            }
+        Log.d(TAG, "dialog close")
+        scanDialog.dismiss()
+
+        Toast.makeText(this, MediaStore.getVersion(this, MediaStore.VOLUME_EXTERNAL), Toast.LENGTH_LONG).show()
 
         // mapView 초기화
         binding.mainMapView.getMapAsync(this)
@@ -145,13 +165,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         }
 
         // 정보창 클릭 이벤트
-//        mInfoWindow!!.onClickListener = Overlay.OnClickListener { // 정보창 클릭 시 정보 상세정보 확인 액티비티 전환
-//            val intent = Intent(this, RecordDetailActivity::class.java)
-//            // 인텐트에 위/경도를 첨부해서 전달
-//            intent.putExtra("selectedLatLng", selectedLatLng as DoubleArray)
-//            startActivity(intent)
-//            false
-//        }
+        mInfoWindow!!.onClickListener = Overlay.OnClickListener { // 정보창 클릭 시 정보 상세정보 확인 액티비티 전환
+            val intent = Intent(this, RecordDetailActivity::class.java)
+            // 인텐트에 위/경도를 첨부해서 전달
+            intent.putExtra("selectedLatLng", selectedLatLng as DoubleArray)
+            startActivity(intent)
+            false
+        }
 
         // 정보창이 아닌 지도 클릭 시 정보창 닫기
         naverMap.onMapClickListener =

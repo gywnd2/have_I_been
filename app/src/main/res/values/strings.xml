@@ -21,6 +21,7 @@
     <string name="record_detail_message_save">작성 내용을 저장할까요?</string>
     <string name="record_detail_no_locName">\'수정\'을 터치하여 입력해보세요.</string>
     <string name="record_detail_no_comment">어떤 장소였나요?</string>
+    <string name="record_detail_no_rating">0.0</string>
 
     <string name="yes">네</string>
     <string name="no">아니오</string>
@@ -40,4 +41,6 @@
     <string name="saved">저장했습니다.</string>
     <string name="alert_scan_pictures">사진을 스캔 중입니다. 잠시만 기다려 주세요.</string>
     <string name="text_failed_to_grant_permissions">앱을 실행하려면 권한이 필요합니다.</string>
+    <string name="record_detail_no_address">경기도 안양시 만안구 석수2동</string>
+    <string name="record_detail_no_datetime">2021-09-27 20:22:17.007</string>
 </resources>
