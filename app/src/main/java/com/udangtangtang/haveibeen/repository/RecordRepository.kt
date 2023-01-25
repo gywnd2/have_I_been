@@ -1,16 +1,13 @@
 package com.udangtangtang.haveibeen.repository
 
-import android.annotation.SuppressLint
 import android.app.Application
-import android.icu.text.AlphabeticIndex.Record
 import android.util.Log
-import androidx.room.Query
 import com.udangtangtang.haveibeen.dao.PictureDao
 import com.udangtangtang.haveibeen.dao.RecordDao
 import com.udangtangtang.haveibeen.database.PictureDatabase
 import com.udangtangtang.haveibeen.database.RecordDatabase
-import com.udangtangtang.haveibeen.entity.AddressRankTuple
-import com.udangtangtang.haveibeen.entity.LatLngTuple
+import com.udangtangtang.haveibeen.model.AddressRankTuple
+import com.udangtangtang.haveibeen.model.LatLngTuple
 import com.udangtangtang.haveibeen.entity.PictureEntity
 import com.udangtangtang.haveibeen.entity.RecordEntity
 import kotlinx.coroutines.CoroutineScope
@@ -22,19 +19,19 @@ class RecordRepository(application: Application) {
     private val pictureDao : PictureDao
     private val TAG = "repository"
     init{
-        var recordDB=RecordDatabase.getInstance(application)
-        var pictureDB=PictureDatabase.getInstance(application)
+        val recordDB=RecordDatabase.getInstance(application)
+        val pictureDB=PictureDatabase.getInstance(application)
         recordDao=recordDB!!.getRecordDao()
         pictureDao=pictureDB!!.getPictureDao()
     }
 
     fun getRecord(latitude : Double, longtitude : Double) : RecordEntity{
-        if(recordDao.isExist(latitude, longtitude)){
-            return recordDao.getEntity(latitude, longtitude)
+        return if(recordDao.isExist(latitude, longtitude)){
+            recordDao.getEntity(latitude, longtitude)
         }else{
             val record=RecordEntity(latitude, longtitude, null, pictureDao.getAddress(latitude, longtitude), pictureDao.getDatetime(latitude, longtitude), null, null)
             createRecord(record)
-            return record
+            record
         }
     }
 
@@ -54,19 +51,6 @@ class RecordRepository(application: Application) {
     fun getAddressCount() : List<AddressRankTuple>{
         return pictureDao.getAddressCount()
     }
-
-//    fun addPicture(pictureList : List<PictureEntity>){
-//        CoroutineScope(Dispatchers.IO).launch {
-//            for (picture in pictureList){
-//                if(!pictureDao.isExist(picture.fileName)){
-//                    pictureDao.insert(picture)
-//                    Log.d(TAG, picture.toString())
-//                }else{
-//                    Log.d(TAG, picture.fileName+" 은 이미 존재합니다.")
-//                }
-//            }
-//        }
-//    }
 
     fun addPicture(picture : PictureEntity){
         CoroutineScope(Dispatchers.IO).launch {
@@ -96,11 +80,15 @@ class RecordRepository(application: Application) {
         return pictureDao.getPictureLatLng(filePath)
     }
 
-    fun getPictureList(latitude: Double, longtitude: Double) : List<String>{
-        return pictureDao.getFileList(latitude, longtitude)
+    fun getPictureList() : List<String>{
+        return pictureDao.getFileList()
     }
 
     fun getSpecificLocationPictureCount(latitude: Double, longtitude: Double):Int{
         return pictureDao.getFileCountOnLocation(latitude, longtitude)
+    }
+
+    fun getPictureOfSpecificLocation(latitude: Double, longtitude: Double):List<String>{
+        return pictureDao.getFileOnLocation(latitude, longtitude)
     }
 }

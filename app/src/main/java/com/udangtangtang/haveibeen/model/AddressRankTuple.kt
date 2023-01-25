@@ -1,4 +1,4 @@
-package com.udangtangtang.haveibeen.entity
+package com.udangtangtang.haveibeen.model
 
 import androidx.room.ColumnInfo
 

@@ -3,9 +3,8 @@ package com.udangtangtang.haveibeen.util
 import android.app.Application
 import android.content.*
 import android.icu.text.SimpleDateFormat
-import android.os.Build
 import android.net.Uri
-import android.os.AsyncTask
+import android.os.Build
 import android.provider.MediaStore
 import android.text.TextUtils
 import android.util.Log
@@ -63,10 +62,6 @@ class PictureScanHelper(private val context: Context) {
                     var address=""
                     datetime=DateTimeFormatter.ofPattern("yyyy년 M월 dd일 HH:mm").format(
                         LocalDateTime.ofInstant(Instant.ofEpochMilli(datetime.toLong() * 1000), ZoneOffset.UTC)
-//                        Instant.ofEpochMilli(
-//                            datetime.toLong() * 1000)
-//                            .atZone(ZoneId.systemDefault())
-//                            .toLocalDate())
                     )
                     var photoUri = Uri.withAppendedPath(
                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
@@ -74,10 +69,7 @@ class PictureScanHelper(private val context: Context) {
                     )
                     photoUri = MediaStore.setRequireOriginal(photoUri)
                     context.contentResolver.openInputStream(photoUri)?.use { stream ->
-                        val exifInterface=ExifInterface(stream).run {
-                            latLong = this.latLong
-//                            datetime = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED))
-                        }
+                        val exifInterface=ExifInterface(stream).run {latLong = this.latLong}
                     }
 
                     // 좌표 정보를 통해 주소를 얻고 이를 파일명, 위/경도 정보, 촬영 일시 등을 모두 DB에 추가
@@ -87,14 +79,13 @@ class PictureScanHelper(private val context: Context) {
                         val picture = PictureEntity(
                             latLong!!.get(0),
                             latLong!!.get(1),
+                            absolutePathOfImage,
                             nameOfFile,
                             null,
-                            datetime,
-                            null,
-                            null,
+                            datetime
                         )
                         pictureList.add(picture)
-                        geocodingHelper!!.getAddress(latLong!!.get(0), latLong!!.get(1))
+                        geocodingHelper.getAddress(latLong!!.get(0), latLong!!.get(1))
                         db.addPicture(picture)
 
                     } else {

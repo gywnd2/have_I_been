@@ -5,8 +5,8 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
-import com.udangtangtang.haveibeen.entity.AddressRankTuple
-import com.udangtangtang.haveibeen.entity.LatLngTuple
+import com.udangtangtang.haveibeen.model.AddressRankTuple
+import com.udangtangtang.haveibeen.model.LatLngTuple
 import com.udangtangtang.haveibeen.entity.PictureEntity
 
 @Dao
@@ -17,10 +17,12 @@ interface PictureDao {
     fun delete(pictureEntity: PictureEntity)
     @Query("SELECT COUNT(*) FROM pictureDB")
     fun getPictureNumbers() : Int
-    @Query("SELECT fileName FROM pictureDB WHERE latitude =:lat AND longtitude =:lng")
-    fun getFileList(lat:Double, lng:Double) : List<String>
+    @Query("SELECT fileName FROM pictureDB")
+    fun getFileList() : List<String>
     @Query("SELECT COUNT(fileName) FROM pictureDB WHERE latitude =:lat AND longtitude =:lng")
     fun getFileCountOnLocation(lat:Double, lng:Double) : Int
+    @Query("SELECT absolutePath FROM pictureDB WHERE latitude =:lat AND longtitude =:lng")
+    fun getFileOnLocation(lat:Double, lng:Double) : List<String>
     @Query("SELECT latitude, longtitude FROM pictureDB WHERE fileName =:absoluteFilePath")
     fun getPictureLatLng(absoluteFilePath : String) : LatLngTuple
     @Query("SELECT datetime FROM pictureDB WHERE latitude =:lat AND longtitude =:lng")
