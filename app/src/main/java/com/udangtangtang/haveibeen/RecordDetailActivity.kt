@@ -1,18 +1,26 @@
 package com.udangtangtang.haveibeen
 
 import android.app.AlertDialog
+import android.icu.text.AlphabeticIndex.Record
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.get
+import com.udangtangtang.haveibeen.ViewModel.RecordViewModel
 import com.udangtangtang.haveibeen.databinding.ActivityRecordDetailBinding
+import com.udangtangtang.haveibeen.entity.RecordEntity
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import com.udangtangtang.haveibeen.util.ViewPagerAdapter
 
 
 class RecordDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRecordDetailBinding
+    private lateinit var recordModel : RecordViewModel
     private lateinit var db : RecordRepository
     private lateinit var dialog: AlertDialog
     private lateinit var builder: AlertDialog.Builder
@@ -27,6 +35,15 @@ class RecordDetailActivity : AppCompatActivity() {
 
         // MainActivity로 부터 fileName 받아오기
         val selectedLatLng = intent.getDoubleArrayExtra("selectedLatLng")
+
+        // UI 업데이트를 위한 Observer
+        val recordObserver= Observer<RecordEntity>{ newRecord->
+            // 저장 시에는 다시 조회하여 출력
+            db.updateRecord(newRecord)
+            binding.record=newRecord
+        }
+        recordModel=ViewModelProvider(this).get(RecordViewModel::class.java)
+        recordModel.currentRecord.observe(this, recordObserver)
 
         // 전달받은 위/경도 정보를 ViewPager 어댑터로 전달
         // 같은 위/경도에 해당하는 모든 사진을 ViewPager에 추가
@@ -59,10 +76,7 @@ class RecordDetailActivity : AppCompatActivity() {
                         queryRecord.comment=binding.recordDetailComment.text.toString()
 
                         // DB 업데이트
-                        db.updateRecord(queryRecord)
-
-                        // 저장 시에는 다시 조회하여 출력
-                        binding.record=db.getRecord(selectedLatLng[0], selectedLatLng[1])
+                        recordModel.currentRecord.value=queryRecord
 
                         // 데이터 내용 표시
                         Toast.makeText(applicationContext, getString(R.string.saved), Toast.LENGTH_LONG)

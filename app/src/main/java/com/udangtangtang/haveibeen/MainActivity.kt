@@ -115,25 +115,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
 
     @UiThread
     override fun onMapReady(naverMap: NaverMap) {
-        // DB로부터 마커 추가
-        Log.d(TAG, db.getTotalPictureCount().toString())
-        val pictureCount=db.getTotalPictureCount()
-        val pictureList=db.getPictureList()
-        if (pictureCount>0) {
-            val markers = mutableListOf<Marker>()
-            for (i in 0 until pictureCount){
-                val marker=Marker()
-                val latLng=db.getPictureCoordination(pictureList.get(i))
-                Log.d(TAG, "Add Marker at :"+ latLng.latitude+"/"+latLng.longtitude)
-                marker.position=LatLng(latLng.latitude, latLng.longtitude)
-                marker.map=naverMap
-                // 마커 클릭 이벤트
-                marker.onClickListener=this
-                markers.add(i, marker)
-            }
-
-        }
-
         // 마커 정보창 생성
         mInfoWindow = InfoWindow()
         infoWindowBinding = DataBindingUtil.inflate<MarkerInfowindowBinding>(layoutInflater, R.layout.marker_infowindow, binding.root, false)
@@ -150,17 +131,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                 selectedLatLng[1]= marker.position.longitude
 
                 // 가져온 데이터로 뷰 만들기
-                val record=db.getRecord(selectedLatLng.get(0), selectedLatLng.get(1))\
+                val record=db.getRecord(selectedLatLng.get(0), selectedLatLng.get(1))
                 // TODO: Fix
-//                with(infoWindowBinding){
-//                    infoWindowLocationTitle.text=record.locationName
-//                    if (record.rating==null) infoWindowRatingBar.rating=getString(R.string.no_rating).toFloat()
-//                    else infoWindowRatingBar.rating=record.rating!!
-//                    infoWindowLocationAddress.text=record.address
-//                    infoWindowDatetime.text=record.datetime
-//                    if (record.comment==null) infoWindowComment.text=getString(R.string.no_comment)
-//                    else infoWindowComment.text=record.comment
-//                }
+                with(infoWindowBinding){
+                    infoWindowLocationTitle.text=record.locationName
+                    if (record.rating==null) infoWindowRatingBar.rating=getString(R.string.no_rating).toFloat()
+                    else infoWindowRatingBar.rating=record.rating!!
+                    infoWindowLocationAddress.text=record.address
+                    infoWindowDatetime.text=record.datetime
+                    if (record.comment==null) infoWindowComment.text=getString(R.string.no_comment)
+                    else infoWindowComment.text=record.comment
+                }
 
                 Log.d(TAG, infoWindowBinding.infoWindowData.toString())
                 return infoWindowBinding.root
@@ -174,6 +155,33 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
             intent.putExtra("selectedLatLng", selectedLatLng)
             startActivity(intent)
             false
+        }
+
+        // DB로부터 마커 추가
+        Log.d(TAG, db.getTotalPictureCount().toString())
+        val pictureCount=db.getTotalPictureCount()
+        val pictureList=db.getPictureList()
+        if (pictureCount>0) {
+            val markers = mutableListOf<Marker>()
+            for (i in 0 until pictureCount){
+                val marker=Marker()
+                val latLng=db.getPictureCoordination(pictureList.get(i))
+                Log.d(TAG, "Add Marker at :"+ latLng.latitude+"/"+latLng.longtitude)
+                marker.position=LatLng(latLng.latitude, latLng.longtitude)
+                marker.map=naverMap
+                // 마커 클릭 이벤트
+                marker.onClickListener=this
+//                marker.onClickListener=object : Overlay.OnClickListener{
+//                    override fun onClick(p0: Overlay):Boolean {
+//                        val record=db.getRecord(marker.position.latitude, marker.position.longitude)
+//                        infoWindowBinding.infoWindowData=record
+//                        mInfoWindow.open(marker)
+//                        return true
+//                    }
+//                }
+                markers.add(i, marker)
+            }
+
         }
 
         // 정보창이 아닌 지도 클릭 시 정보창 닫기
