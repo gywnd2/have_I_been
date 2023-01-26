@@ -171,14 +171,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                 marker.map=naverMap
                 // 마커 클릭 이벤트
                 marker.onClickListener=this
-//                marker.onClickListener=object : Overlay.OnClickListener{
-//                    override fun onClick(p0: Overlay):Boolean {
-//                        val record=db.getRecord(marker.position.latitude, marker.position.longitude)
-//                        infoWindowBinding.infoWindowData=record
-//                        mInfoWindow.open(marker)
-//                        return true
-//                    }
-//                }
                 markers.add(i, marker)
             }
 
@@ -220,6 +212,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
             if (overlay.infoWindow != null) {
                 mInfoWindow.close()
             } else {
+//                infoWindowBinding.infoWindowData=db.getRecord(overlay.position.latitude, overlay.position.longitude)
                 mInfoWindow.open(overlay)
             }
             return true

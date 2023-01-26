@@ -15,7 +15,7 @@ interface RecordDao {
     @Update
     fun update(record:RecordEntity)
     @Query("SELECT * FROM recordDB WHERE latitude =:lat AND longtitude =:lng")
-    fun getEntity(lat : Double, lng : Double): Flow<RecordEntity>
+    fun getEntity(lat : Double, lng : Double): RecordEntity
     @Query("SELECT EXISTS(SELECT * FROM recordDB WHERE latitude =:lat AND longtitude =:lng)")
     fun isExist(lat : Double, lng : Double): Boolean
 }

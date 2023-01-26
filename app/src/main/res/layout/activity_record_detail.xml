@@ -6,8 +6,8 @@
 
     <data>
         <variable
-            name="record"
-            type="com.udangtangtang.haveibeen.entity.RecordEntity" />
+            name="viewModel"
+            type="com.udangtangtang.haveibeen.viewmodel.RecordViewModel" />
         <variable
             name="isEditing"
             type="Boolean"/>
@@ -43,7 +43,7 @@
                 android:layout_below="@id/record_detail_viewpager2"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="10dp"
-                android:text="@{record.locationName, default=@string/no_location_info}"
+                android:text="@{viewModel.currentRecord.locationName, default=@string/no_location_info}"
                 android:gravity="center_vertical"
                 android:textColor="@color/black"
                 android:textSize="30sp"
@@ -58,7 +58,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/record_detail_location_name"
                 android:layout_centerHorizontal="true"
-                android:text="@{record.address, default=@string/record_detail_no_address}"
+                android:text="@{viewModel.currentRecord.address, default=@string/record_detail_no_address}"
                 android:textColor="@color/black"
                 android:textSize="18sp" />
 
@@ -68,7 +68,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/record_detail_address"
                 android:layout_centerHorizontal="true"
-                android:text="@{record.datetime, default=@string/record_detail_no_datetime}"
+                android:text="@{viewModel.currentRecord.datetime, default=@string/record_detail_no_datetime}"
                 android:textColor="@color/black"
                 android:textSize="18sp" />
 
@@ -79,7 +79,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/record_detail_datetime"
                 android:layout_centerHorizontal="true"
-                android:rating="@{record.rating, default=@string/no_rating}"
+                android:rating="@{viewModel.currentRecord.rating, default=@string/no_rating}"
                 android:focusable="@{isEditing ? true:false}"
                 android:focusableInTouchMode="@{isEditing ? true:false}"
                 android:clickable="@{isEditing ? true:false}"
@@ -92,7 +92,7 @@
                 android:layout_below="@id/record_detail_rating"
                 android:layout_centerHorizontal="true"
                 android:padding="20dp"
-                android:text="@{record.comment, default=@string/record_detail_no_comment}"
+                android:text="@{viewModel.currentRecord.comment, default=@string/record_detail_no_comment}"
                 android:textColor="@color/black"
                 android:textSize="20sp"
                 android:focusable="@{isEditing ? true:false}"

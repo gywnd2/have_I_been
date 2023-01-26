@@ -1,26 +1,22 @@
 package com.udangtangtang.haveibeen
 
 import android.app.AlertDialog
-import android.icu.text.AlphabeticIndex.Record
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.get
-import com.udangtangtang.haveibeen.ViewModel.RecordViewModel
+import com.udangtangtang.haveibeen.viewmodel.RecordViewModel
 import com.udangtangtang.haveibeen.databinding.ActivityRecordDetailBinding
-import com.udangtangtang.haveibeen.entity.RecordEntity
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import com.udangtangtang.haveibeen.util.ViewPagerAdapter
+import com.udangtangtang.haveibeen.viewmodel.RecordViewModelFactory
 
 
 class RecordDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRecordDetailBinding
-    private lateinit var recordModel : RecordViewModel
+    private lateinit var recordViewModel : RecordViewModel
     private lateinit var db : RecordRepository
     private lateinit var dialog: AlertDialog
     private lateinit var builder: AlertDialog.Builder
@@ -28,7 +24,6 @@ class RecordDetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_record_detail)
-        setContentView(binding.root)
 
         // DB 연결
         db=RecordRepository(application)
@@ -37,25 +32,26 @@ class RecordDetailActivity : AppCompatActivity() {
         val selectedLatLng = intent.getDoubleArrayExtra("selectedLatLng")
 
         // UI 업데이트를 위한 Observer
-        val recordObserver= Observer<RecordEntity>{ newRecord->
+        val viewModelFactory=RecordViewModelFactory(application, selectedLatLng!!)
+        recordViewModel=ViewModelProvider(this, viewModelFactory).get(RecordViewModel::class.java)
+
+        binding.viewModel=recordViewModel
+        recordViewModel.currentRecord.observe(this, Observer{
             // 저장 시에는 다시 조회하여 출력
-            db.updateRecord(newRecord)
-            binding.record=newRecord
-        }
-        recordModel=ViewModelProvider(this).get(RecordViewModel::class.java)
-        recordModel.currentRecord.observe(this, recordObserver)
+            binding.viewModel!!.setViewRecord(it)
+        })
 
         // 전달받은 위/경도 정보를 ViewPager 어댑터로 전달
         // 같은 위/경도에 해당하는 모든 사진을 ViewPager에 추가
         binding.recordDetailViewpager2.adapter = ViewPagerAdapter(this, selectedLatLng!!)
 
         // 데이터 가져오기
-        var queryRecord=db.getRecord(selectedLatLng[0], selectedLatLng[1])
-        binding.record=queryRecord
-        binding.isEditing=false
+//        var queryRecord=db.getRecord(selectedLatLng[0], selectedLatLng[1])
+//        binding.record=queryRecord
+//        binding.isEditing=false
 
         // 액티비티 타이틀 설정
-        title = if (queryRecord.locationName == null) getString(R.string.no_location_info) else queryRecord.locationName
+        title = if (binding.viewModel!!.currentRecord.value?.locationName == null) getString(R.string.no_location_info) else getString(R.string.no_location_info)
 
         // Indicator 설정
         binding.recordDetailImageIndicator.setViewPager(binding.recordDetailViewpager2)
@@ -71,12 +67,14 @@ class RecordDetailActivity : AppCompatActivity() {
                     .setPositiveButton(R.string.yes) { _, _ ->
                         // 입력 중지
                         binding.isEditing=false
-                        queryRecord.locationName= binding.recordDetailLocationName.text.toString()
-                        queryRecord.rating=binding.recordDetailRating.rating
-                        queryRecord.comment=binding.recordDetailComment.text.toString()
+//                        queryRecord.locationName= binding.recordDetailLocationName.text.toString()
+//                        queryRecord.rating=binding.recordDetailRating.rating
+//                        queryRecord.comment=binding.recordDetailComment.text.toString()
 
                         // DB 업데이트
-                        recordModel.currentRecord.value=queryRecord
+                        with(binding){
+                            recordViewModel.updateRecord(recordDetailLocationName.text.toString(), recordDetailRating.rating, recordDetailComment.text.toString())
+                        }
 
                         // 데이터 내용 표시
                         Toast.makeText(applicationContext, getString(R.string.saved), Toast.LENGTH_LONG)

@@ -12,7 +12,6 @@ import com.udangtangtang.haveibeen.entity.PictureEntity
 import com.udangtangtang.haveibeen.entity.RecordEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 class RecordRepository(application: Application) {
@@ -26,13 +25,13 @@ class RecordRepository(application: Application) {
         pictureDao=pictureDB!!.getPictureDao()
     }
 
-    fun getRecord(latitude : Double, longtitude : Double) : Flow<RecordEntity> {
+    fun getRecord(latitude : Double, longtitude : Double) : RecordEntity{
         return if(recordDao.isExist(latitude, longtitude)){
             recordDao.getEntity(latitude, longtitude)
         }else{
             val record=RecordEntity(latitude, longtitude, null, pictureDao.getAddress(latitude, longtitude), pictureDao.getDatetime(latitude, longtitude), null, null)
             createRecord(record)
-            Flow(record)
+            record
         }
     }
 
