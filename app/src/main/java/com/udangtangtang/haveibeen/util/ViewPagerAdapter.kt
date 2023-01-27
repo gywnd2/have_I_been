@@ -2,6 +2,7 @@ package com.udangtangtang.haveibeen.util
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,15 +14,18 @@ import com.udangtangtang.haveibeen.repository.RecordRepository
 import com.udangtangtang.haveibeen.util.ViewPagerAdapter.ViewHolderPage
 import java.io.File
 
-class ViewPagerAdapter(private val context: Context, latLng: DoubleArray) : RecyclerView.Adapter<ViewHolderPage>() {
+class ViewPagerAdapter(private val context: Context, private val db:RecordRepository, private val latLng: DoubleArray) : RecyclerView.Adapter<ViewHolderPage>() {
 
     private val binding : Viewpager2RecordDetailBinding
-    private val db : RecordRepository
     private val pictures : List<String>
+    companion object{
+        private const val TAG ="ViewPagerAdapter"
+    }
+
     init {
         binding= Viewpager2RecordDetailBinding.inflate(LayoutInflater.from(context))
-        db=RecordRepository(context.applicationContext as Application)
         pictures=db.getPictureOfSpecificLocation(latLng[0], latLng[1])
+        Log.d(TAG, pictures.toString())
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderPage {
@@ -30,7 +34,6 @@ class ViewPagerAdapter(private val context: Context, latLng: DoubleArray) : Recy
     }
 
     override fun onBindViewHolder(holder: ViewHolderPage, position: Int) {
-
         holder.onBind(pictures[position])
     }
 

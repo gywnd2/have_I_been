@@ -1,14 +1,21 @@
 package com.udangtangtang.haveibeen
 
 import android.app.AlertDialog
+import android.app.Application
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.gms.common.internal.safeparcel.SafeParcelable
 import com.udangtangtang.haveibeen.viewmodel.RecordViewModel
 import com.udangtangtang.haveibeen.databinding.ActivityRecordDetailBinding
+import com.udangtangtang.haveibeen.entity.RecordEntity
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import com.udangtangtang.haveibeen.util.ViewPagerAdapter
 import com.udangtangtang.haveibeen.viewmodel.RecordViewModelFactory
@@ -21,9 +28,13 @@ class RecordDetailActivity : AppCompatActivity() {
     private lateinit var dialog: AlertDialog
     private lateinit var builder: AlertDialog.Builder
 
+    companion object{
+        private const val TAG = "RecordDetailActivity"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_record_detail)
+        binding = DataBindingUtil.setContentView<ActivityRecordDetailBinding>(this, R.layout.activity_record_detail)
 
         // DB 연결
         db=RecordRepository(application)
@@ -32,32 +43,27 @@ class RecordDetailActivity : AppCompatActivity() {
         val selectedLatLng = intent.getDoubleArrayExtra("selectedLatLng")
 
         // UI 업데이트를 위한 Observer
-        val viewModelFactory=RecordViewModelFactory(application, selectedLatLng!!)
-        recordViewModel=ViewModelProvider(this, viewModelFactory).get(RecordViewModel::class.java)
-
-        binding.viewModel=recordViewModel
+        val factory =  RecordViewModelFactory(db, selectedLatLng!!)
+        recordViewModel=ViewModelProvider(this, factory).get(RecordViewModel::class.java)
+        binding.viewModel=recordViewModel!!
+        binding.isEditing=false
         recordViewModel.currentRecord.observe(this, Observer{
-            // 저장 시에는 다시 조회하여 출력
-            binding.viewModel!!.setViewRecord(it)
+            recordViewModel.setViewRecord(it)
+            Log.d(TAG, "Record changed : "+it.toString())
         })
 
         // 전달받은 위/경도 정보를 ViewPager 어댑터로 전달
         // 같은 위/경도에 해당하는 모든 사진을 ViewPager에 추가
-        binding.recordDetailViewpager2.adapter = ViewPagerAdapter(this, selectedLatLng!!)
+        binding.recordDetailViewpager2.adapter = ViewPagerAdapter(this, db, selectedLatLng!!)
 
-        // 데이터 가져오기
-//        var queryRecord=db.getRecord(selectedLatLng[0], selectedLatLng[1])
-//        binding.record=queryRecord
-//        binding.isEditing=false
-
-        // 액티비티 타이틀 설정
+//         액티비티 타이틀 설정
         title = if (binding.viewModel!!.currentRecord.value?.locationName == null) getString(R.string.no_location_info) else getString(R.string.no_location_info)
 
-        // Indicator 설정
+//         SafeParcelable.Indicator 설정
         binding.recordDetailImageIndicator.setViewPager(binding.recordDetailViewpager2)
         binding.recordDetailImageIndicator.createIndicators(db.getSpecificLocationPictureCount(selectedLatLng[0], selectedLatLng[1]),0)
 
-        // 수정 클릭시 수정 시작
+//         수정 클릭시 수정 시작
         binding.recordDetailButtonEdit.setOnClickListener {
             if (binding.isEditing!!){
                 // 수정 확인
@@ -67,29 +73,22 @@ class RecordDetailActivity : AppCompatActivity() {
                     .setPositiveButton(R.string.yes) { _, _ ->
                         // 입력 중지
                         binding.isEditing=false
-//                        queryRecord.locationName= binding.recordDetailLocationName.text.toString()
-//                        queryRecord.rating=binding.recordDetailRating.rating
-//                        queryRecord.comment=binding.recordDetailComment.text.toString()
-
                         // DB 업데이트
-                        with(binding){
-                            recordViewModel.updateRecord(recordDetailLocationName.text.toString(), recordDetailRating.rating, recordDetailComment.text.toString())
-                        }
+                        with(binding){ recordViewModel.updateRecord(recordDetailLocationName.text.toString(), recordDetailRating.rating, recordDetailComment.text.toString()) }
 
-                        // 데이터 내용 표시
+                        // 저장 알림
                         Toast.makeText(applicationContext, getString(R.string.saved), Toast.LENGTH_LONG)
                             .show()
-                    }
-                    .setNegativeButton(R.string.no) { _, _ -> }
+                    }.setNegativeButton(R.string.no) { _, _ -> }
 
                 // 확인창 표시
                 dialog = builder.create()
                 builder.show()
             }else{
                 binding.isEditing=true
-                Toast.makeText(this, binding.isEditing.toString(),Toast.LENGTH_SHORT).show()
             }
 
         }
     }
 }
+

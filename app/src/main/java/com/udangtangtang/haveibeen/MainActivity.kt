@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
     override fun onMapReady(naverMap: NaverMap) {
         // 마커 정보창 생성
         mInfoWindow = InfoWindow()
-        infoWindowBinding = DataBindingUtil.inflate<MarkerInfowindowBinding>(layoutInflater, R.layout.marker_infowindow, binding.root, false)
+        infoWindowBinding = DataBindingUtil.inflate(layoutInflater, R.layout.marker_infowindow, binding.root, false)
         var selectedLatLng= DoubleArray(2)
 
         // 정보창 어댑터 설정
@@ -133,17 +133,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                 // 가져온 데이터로 뷰 만들기
                 val record=db.getRecord(selectedLatLng.get(0), selectedLatLng.get(1))
                 // TODO: Fix
+                infoWindowBinding.infoWindowData=record
                 with(infoWindowBinding){
-                    infoWindowLocationTitle.text=record.locationName
+                    if (record.locationName==null) infoWindowLocationTitle.text=getString(R.string.no_location_info) else infoWindowLocationTitle.text=record.locationName
                     if (record.rating==null) infoWindowRatingBar.rating=getString(R.string.no_rating).toFloat()
                     else infoWindowRatingBar.rating=record.rating!!
                     infoWindowLocationAddress.text=record.address
                     infoWindowDatetime.text=record.datetime
-                    if (record.comment==null) infoWindowComment.text=getString(R.string.no_comment)
-                    else infoWindowComment.text=record.comment
                 }
 
-                Log.d(TAG, infoWindowBinding.infoWindowData.toString())
+                Log.d(TAG, "infowindowdata"+infoWindowBinding.infoWindowData.toString())
                 return infoWindowBinding.root
             }
         }
@@ -158,7 +157,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         }
 
         // DB로부터 마커 추가
-        Log.d(TAG, db.getTotalPictureCount().toString())
+        Log.d(TAG, "dbcount0"+db.getTotalPictureCount().toString())
         val pictureCount=db.getTotalPictureCount()
         val pictureList=db.getPictureList()
         if (pictureCount>0) {
