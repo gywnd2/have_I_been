@@ -1,28 +1,23 @@
 package com.udangtangtang.haveibeen.activity
 
-import android.app.AlertDialog
 import android.os.Bundle
-import android.util.Log
-import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import com.udangtangtang.haveibeen.R
-import com.udangtangtang.haveibeen.viewmodel.RecordViewModel
 import com.udangtangtang.haveibeen.databinding.ActivityRecordDetailBinding
+import com.udangtangtang.haveibeen.entity.RecordEntity
+import com.udangtangtang.haveibeen.fragment.PictureViewFragment
+import com.udangtangtang.haveibeen.fragment.RecordViewFragment
 import com.udangtangtang.haveibeen.repository.RecordRepository
-import com.udangtangtang.haveibeen.util.ViewPagerAdapter
-import com.udangtangtang.haveibeen.viewmodel.RecordViewModelFactory
 
 
 class RecordDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRecordDetailBinding
-    private lateinit var recordViewModel : RecordViewModel
-    private lateinit var db : RecordRepository
-    private lateinit var dialog: AlertDialog
-    private lateinit var builder: AlertDialog.Builder
+    private lateinit var fragmentManager: FragmentManager
+    lateinit var selectedLatLng: DoubleArray
+    lateinit var db : RecordRepository
+    lateinit var record : RecordEntity
 
     companion object{
         private const val TAG = "RecordDetailActivity"
@@ -30,80 +25,38 @@ class RecordDetailActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView<ActivityRecordDetailBinding>(this,
-            R.layout.activity_record_detail
-        )
-
+        binding = ActivityRecordDetailBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        fragmentManager=supportFragmentManager
         // DB 연결
         db=RecordRepository(application)
 
+        val recordFragment=RecordViewFragment()
+        val pictureFragment=PictureViewFragment()
+
         // MainActivity로 부터 fileName 받아오기
-        val selectedLatLng = intent.getDoubleArrayExtra("selectedLatLng")
+        selectedLatLng = intent.getDoubleArrayExtra("selectedLatLng")!!
+        record=db.getRecord(selectedLatLng!![0], selectedLatLng[1])
 
-        // UI 업데이트를 위한 Observer
-        val factory =  RecordViewModelFactory(db, selectedLatLng!!)
-        recordViewModel=ViewModelProvider(this, factory).get(RecordViewModel::class.java)
-        binding.viewModel=recordViewModel!!
-        binding.isEditing=false
-        recordViewModel.currentRecord.observe(this, Observer{
-            recordViewModel.setViewRecord(it)
-            Log.d(TAG, "Record changed : "+it.toString())
-        })
-
-        // 전달받은 위/경도 정보를 ViewPager 어댑터로 전달
-        // 같은 위/경도에 해당하는 모든 사진을 ViewPager에 추가
-        binding.recordDetailViewpager2.adapter = ViewPagerAdapter(this, db, selectedLatLng!!)
-
-//         액티비티 타이틀 설정
-        title = if (binding.viewModel!!.currentRecord.value?.locationName == null) getString(R.string.no_location_info) else getString(
+        // 액티비티 타이틀 설정
+        title = if (record.locationName == null) getString(R.string.no_location_info) else getString(
             R.string.no_location_info
         )
 
-//         Indicator 설정
-        binding.recordDetailImageIndicator.setViewPager(binding.recordDetailViewpager2)
-        binding.recordDetailImageIndicator.createIndicators(db.getSpecificLocationPictureCount(selectedLatLng[0], selectedLatLng[1]),0)
+        // Fragment 추가
+        fragmentManager.beginTransaction()
+            .add(R.id.container_record_fragments, recordFragment)
+            .commit()
 
-        var isFullScreen=false
-        binding.containerRecordDetailViewpager.setOnClickListener{
-            Log.d(TAG, "viewpager clicked")
-            if (isFullScreen) {
-                isFullScreen=false
-                it.layoutParams.height = LinearLayout.LayoutParams.FILL_PARENT
-                it.layoutParams.width = LinearLayout.LayoutParams.FILL_PARENT
-            } else {
-                isFullScreen=true
-                it.layoutParams.height = 300
-                it.layoutParams.width = LinearLayout.LayoutParams.MATCH_PARENT
-            }
-        }
+        // TODO : 사진 터치 시 프래그먼트 전환
 
+    }
 
-//         수정 클릭시 수정 시작
-        binding.recordDetailButtonEdit.setOnClickListener {
-            if (binding.isEditing!!){
-                // 수정 확인
-                builder = AlertDialog.Builder(this@RecordDetailActivity)
-                builder.setTitle(R.string.record_detail_title_save)
-                    .setMessage(R.string.record_detail_message_save)
-                    .setPositiveButton(R.string.yes) { _, _ ->
-                        // 입력 중지
-                        binding.isEditing=false
-                        // DB 업데이트
-                        with(binding){ recordViewModel.updateRecord(recordDetailLocationName.text.toString(), recordDetailRating.rating, recordDetailComment.text.toString()) }
-
-                        // 저장 알림
-                        Toast.makeText(applicationContext, getString(R.string.saved), Toast.LENGTH_LONG)
-                            .show()
-                    }.setNegativeButton(R.string.no) { _, _ -> }
-
-                // 확인창 표시
-                dialog = builder.create()
-                builder.show()
-            }else{
-                binding.isEditing=true
-            }
-
-        }
+    fun changeFragment(){
+        fragmentManager.beginTransaction()
+            .replace(R.id.container_record_fragments, PictureViewFragment)
+            .addToBackStack(null)
+            .commit()
     }
 }
 

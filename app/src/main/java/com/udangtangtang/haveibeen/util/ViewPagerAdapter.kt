@@ -8,12 +8,18 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.udangtangtang.haveibeen.R
+import com.udangtangtang.haveibeen.activity.RecordDetailActivity
 import com.udangtangtang.haveibeen.databinding.Viewpager2RecordDetailBinding
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import com.udangtangtang.haveibeen.util.ViewPagerAdapter.ViewHolderPage
 import java.io.File
 
-class ViewPagerAdapter(private val context: Context, private val db:RecordRepository, private val latLng: DoubleArray) : RecyclerView.Adapter<ViewHolderPage>() {
+class ViewPagerAdapter(
+    private val context: Context,
+    private val db: RecordRepository,
+    private val latLng: DoubleArray,
+    private val isPictureView: Boolean
+) : RecyclerView.Adapter<ViewHolderPage>() {
 
     private lateinit var binding : Viewpager2RecordDetailBinding
     private val pictures : List<String>
@@ -28,7 +34,9 @@ class ViewPagerAdapter(private val context: Context, private val db:RecordReposi
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderPage {
         binding= Viewpager2RecordDetailBinding.inflate(LayoutInflater.from(context), parent, false)
-
+        binding.viewpager2RecordDetailImage.setOnClickListener{
+            if(!isPictureView) (parent.context as RecordDetailActivity).changeFragment()
+        }
         return ViewHolderPage(binding.root)
     }
 
