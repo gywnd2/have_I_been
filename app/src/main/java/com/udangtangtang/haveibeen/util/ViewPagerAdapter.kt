@@ -1,6 +1,5 @@
 package com.udangtangtang.haveibeen.util
 
-import android.app.Application
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
@@ -16,21 +15,21 @@ import java.io.File
 
 class ViewPagerAdapter(private val context: Context, private val db:RecordRepository, private val latLng: DoubleArray) : RecyclerView.Adapter<ViewHolderPage>() {
 
-    private val binding : Viewpager2RecordDetailBinding
+    private lateinit var binding : Viewpager2RecordDetailBinding
     private val pictures : List<String>
     companion object{
         private const val TAG ="ViewPagerAdapter"
     }
 
     init {
-        binding= Viewpager2RecordDetailBinding.inflate(LayoutInflater.from(context))
         pictures=db.getPictureOfSpecificLocation(latLng[0], latLng[1])
         Log.d(TAG, pictures.toString())
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderPage {
-        val view = LayoutInflater.from(context).inflate(R.layout.viewpager2_record_detail, parent, false)
-        return ViewHolderPage(view)
+        binding= Viewpager2RecordDetailBinding.inflate(LayoutInflater.from(context), parent, false)
+
+        return ViewHolderPage(binding.root)
     }
 
     override fun onBindViewHolder(holder: ViewHolderPage, position: Int) {
@@ -46,6 +45,7 @@ class ViewPagerAdapter(private val context: Context, private val db:RecordReposi
             // 사진 파일 전체 경로로 이미지 설정
             Glide.with(context)
                 .load(File(filename!!))
+                .placeholder(R.drawable.image)
                 .into(binding.viewpager2RecordDetailImage)
         }
     }

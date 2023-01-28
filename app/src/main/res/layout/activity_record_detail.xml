@@ -1,115 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".RecordDetailActivity">
-
-    <data>
-        <variable
-            name="viewModel"
-            type="com.udangtangtang.haveibeen.viewmodel.RecordViewModel" />
-        <variable
-            name="isEditing"
-            type="Boolean"/>
-    </data>
-
-    <ScrollView
-        android:layout_height="match_parent"
-        android:layout_width="match_parent">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingBottom="20dp">
-
-            <!--데이터 보기!-->
-            <androidx.viewpager2.widget.ViewPager2
-                android:id="@+id/record_detail_viewpager2"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:orientation="horizontal"/>
-
-            <me.relex.circleindicator.CircleIndicator3
-                android:id="@+id/record_detail_image_indicator"
-                android:layout_width="match_parent"
-                android:layout_height="45dp"
-                android:background="@drawable/bg_fading_edge"
-                android:layout_alignBottom="@id/record_detail_viewpager2" />
-
-            <EditText
-                android:id="@+id/record_detail_location_name"
-                android:layout_width="wrap_content"
-                android:layout_height="60dp"
-                android:minWidth="50dp"
-                android:layout_below="@id/record_detail_viewpager2"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="10dp"
-                android:text="@{viewModel.currentRecord.locationName==null ? @string/no_location_info:viewModel.currentRecord.locationName}"
-                android:gravity="center_vertical"
-                android:textColor="@color/black"
-                android:textSize="30sp"
-                android:focusable="@{isEditing ? true:false}"
-                android:focusableInTouchMode="@{isEditing ? true:false}"
-                android:clickable="@{isEditing ? true:false}"
-                android:cursorVisible="@{isEditing ? true:false}"/>
-
-            <TextView
-                android:id="@+id/record_detail_address"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/record_detail_location_name"
-                android:layout_centerHorizontal="true"
-                android:text="@{viewModel.currentRecord.address==null ? @string/record_detail_no_address:viewModel.currentRecord.address}"
-                android:textColor="@color/black"
-                android:textSize="18sp" />
-
-            <TextView
-                android:id="@+id/record_detail_datetime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/record_detail_address"
-                android:layout_centerHorizontal="true"
-                android:text="@{viewModel.currentRecord.datetime==null ? @string/record_detail_no_datetime:viewModel.currentRecord.datetime}"
-                android:textColor="@color/black"
-                android:textSize="18sp" />
-
-            <RatingBar
-                android:id="@+id/record_detail_rating"
-                style="?android:attr/ratingBarStyleIndicator"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/record_detail_datetime"
-                android:layout_centerHorizontal="true"
-                android:rating="@{viewModel.currentRecord.rating, default=@string/no_rating}"
-                android:isIndicator="@{isEditing ? false:true}"
-                android:stepSize="0.5" />
-
-            <EditText
-                android:id="@+id/record_detail_comment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/record_detail_rating"
-                android:layout_centerHorizontal="true"
-                android:padding="20dp"
-                android:text="@{viewModel.currentRecord.comment==null ? @string/record_detail_no_comment:viewModel.currentRecord.comment}"
-                android:textColor="@color/black"
-                android:textSize="20sp"
-                android:focusable="@{isEditing ? true:false}"
-                android:focusableInTouchMode="@{isEditing ? true:false}"
-                android:clickable="@{isEditing ? true:false}"
-                android:cursorVisible="@{isEditing ? true:false}"/>
-
-            <Button
-                android:id="@+id/record_detail_button_edit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/record_detail_comment"
-                android:layout_centerHorizontal="true"
-                android:text="@{isEditing? @string/save:@string/edit}" />
-
-        </RelativeLayout>
-
-
-    </ScrollView>
-
-</layout>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <fragment android:name="com.udangtangtang.haveibeen.fragment.RecordViewFragment"
+        android:id="@+id/list"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="match_parent" />
+    <fragment android:name="com.udangtangtang.haveibeen.fragment.PictureViewFragment"
+        android:id="@+id/viewer"
+        android:layout_weight="2"
+        android:layout_width="0dp"
+        android:layout_height="match_parent" />
+</LinearLayout>

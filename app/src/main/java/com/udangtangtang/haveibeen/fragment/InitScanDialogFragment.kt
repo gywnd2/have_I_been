@@ -1,14 +1,10 @@
-package com.udangtangtang.haveibeen
+package com.udangtangtang.haveibeen.fragment
 
 import android.app.AlertDialog
 import android.app.Dialog
-import android.content.Context
 import android.os.Bundle
-import android.view.ContextThemeWrapper
-import android.view.Window
-import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
-import com.naver.maps.map.a.g
+import com.udangtangtang.haveibeen.R
 
 class InitScanDialogFragment : DialogFragment() {
 

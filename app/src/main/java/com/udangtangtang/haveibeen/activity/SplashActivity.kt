@@ -1,7 +1,6 @@
-package com.udangtangtang.haveibeen
+package com.udangtangtang.haveibeen.activity
 
 import android.Manifest
-import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
@@ -10,8 +9,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.udangtangtang.haveibeen.R
 import com.udangtangtang.haveibeen.databinding.ActivitySplashBinding
-import com.udangtangtang.haveibeen.util.PictureScanHelper
 import kotlinx.coroutines.*
 
 class SplashActivity : AppCompatActivity() {

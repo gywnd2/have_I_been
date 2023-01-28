@@ -1,7 +1,6 @@
-package com.udangtangtang.haveibeen
+package com.udangtangtang.haveibeen.activity
 
 import android.Manifest.permission.*
-import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -11,8 +10,6 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
-import android.view.ViewManager
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.annotation.UiThread
@@ -30,8 +27,10 @@ import com.naver.maps.map.overlay.InfoWindow
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.Overlay
 import com.naver.maps.map.util.FusedLocationSource
+import com.udangtangtang.haveibeen.R
 import com.udangtangtang.haveibeen.databinding.ActivityMainBinding
 import com.udangtangtang.haveibeen.databinding.MarkerInfowindowBinding
+import com.udangtangtang.haveibeen.fragment.InitScanDialogFragment
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import com.udangtangtang.haveibeen.util.PictureScanHelper
 import kotlinx.coroutines.*
@@ -68,7 +67,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
 
         // Init
         db= RecordRepository(application)
-        scanDialog=InitScanDialogFragment()
+        scanDialog= InitScanDialogFragment()
         sharedPreferences= EncryptedSharedPreferences.create(
             this,
             FILENAME,
@@ -117,7 +116,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
     override fun onMapReady(naverMap: NaverMap) {
         // 마커 정보창 생성
         mInfoWindow = InfoWindow()
-        infoWindowBinding = DataBindingUtil.inflate(layoutInflater, R.layout.marker_infowindow, binding.root, false)
+        infoWindowBinding = DataBindingUtil.inflate(layoutInflater,
+            R.layout.marker_infowindow, binding.root, false)
         var selectedLatLng= DoubleArray(2)
 
         // 정보창 어댑터 설정

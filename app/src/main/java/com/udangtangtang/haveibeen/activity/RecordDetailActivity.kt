@@ -1,21 +1,17 @@
-package com.udangtangtang.haveibeen
+package com.udangtangtang.haveibeen.activity
 
 import android.app.AlertDialog
-import android.app.Application
 import android.os.Bundle
 import android.util.Log
+import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.gms.common.internal.safeparcel.SafeParcelable
+import com.udangtangtang.haveibeen.R
 import com.udangtangtang.haveibeen.viewmodel.RecordViewModel
 import com.udangtangtang.haveibeen.databinding.ActivityRecordDetailBinding
-import com.udangtangtang.haveibeen.entity.RecordEntity
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import com.udangtangtang.haveibeen.util.ViewPagerAdapter
 import com.udangtangtang.haveibeen.viewmodel.RecordViewModelFactory
@@ -34,7 +30,9 @@ class RecordDetailActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView<ActivityRecordDetailBinding>(this, R.layout.activity_record_detail)
+        binding = DataBindingUtil.setContentView<ActivityRecordDetailBinding>(this,
+            R.layout.activity_record_detail
+        )
 
         // DB 연결
         db=RecordRepository(application)
@@ -57,11 +55,28 @@ class RecordDetailActivity : AppCompatActivity() {
         binding.recordDetailViewpager2.adapter = ViewPagerAdapter(this, db, selectedLatLng!!)
 
 //         액티비티 타이틀 설정
-        title = if (binding.viewModel!!.currentRecord.value?.locationName == null) getString(R.string.no_location_info) else getString(R.string.no_location_info)
+        title = if (binding.viewModel!!.currentRecord.value?.locationName == null) getString(R.string.no_location_info) else getString(
+            R.string.no_location_info
+        )
 
-//         SafeParcelable.Indicator 설정
+//         Indicator 설정
         binding.recordDetailImageIndicator.setViewPager(binding.recordDetailViewpager2)
         binding.recordDetailImageIndicator.createIndicators(db.getSpecificLocationPictureCount(selectedLatLng[0], selectedLatLng[1]),0)
+
+        var isFullScreen=false
+        binding.containerRecordDetailViewpager.setOnClickListener{
+            Log.d(TAG, "viewpager clicked")
+            if (isFullScreen) {
+                isFullScreen=false
+                it.layoutParams.height = LinearLayout.LayoutParams.FILL_PARENT
+                it.layoutParams.width = LinearLayout.LayoutParams.FILL_PARENT
+            } else {
+                isFullScreen=true
+                it.layoutParams.height = 300
+                it.layoutParams.width = LinearLayout.LayoutParams.MATCH_PARENT
+            }
+        }
+
 
 //         수정 클릭시 수정 시작
         binding.recordDetailButtonEdit.setOnClickListener {
