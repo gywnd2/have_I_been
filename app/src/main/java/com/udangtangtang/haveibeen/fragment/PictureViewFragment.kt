@@ -1,6 +1,10 @@
 package com.udangtangtang.haveibeen.fragment
 
+import android.app.Activity
+import android.app.Application
+import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,11 +14,14 @@ import com.udangtangtang.haveibeen.R
 import com.udangtangtang.haveibeen.activity.RecordDetailActivity
 import com.udangtangtang.haveibeen.databinding.FragmentPictureViewBinding
 import com.udangtangtang.haveibeen.databinding.FragmentRecordViewBinding
+import com.udangtangtang.haveibeen.repository.RecordRepository
 import com.udangtangtang.haveibeen.util.ViewPagerAdapter
 
 class PictureViewFragment : Fragment(){
-    private lateinit var binding : FragmentPictureViewBinding
+    private var _binding : FragmentPictureViewBinding?=null
+    private val binding get() = _binding!!
     private lateinit var parentActivity : RecordDetailActivity
+    private lateinit var db : RecordRepository
 
     companion object{
         private const val TAG="PictureViewFragment"
@@ -25,18 +32,24 @@ class PictureViewFragment : Fragment(){
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding= FragmentPictureViewBinding.inflate(layoutInflater)
+        _binding= FragmentPictureViewBinding.inflate(inflater, container, false)
         parentActivity=activity as RecordDetailActivity
+        db= RecordRepository(parentActivity.application)
+        val selectedLatLng = parentActivity.intent.getDoubleArrayExtra("selectedLatLng")
 
         // 전달받은 위/경도 정보를 ViewPager 어댑터로 전달
         // 같은 위/경도에 해당하는 모든 사진을 ViewPager에 추가
-        binding.recordDetailViewpager2.adapter = ViewPagerAdapter(parentActivity, parentActivity.db, parentActivity.selectedLatLng!!, true)
-
+        binding.recordDetailViewpager2.adapter = ViewPagerAdapter(parentActivity, db, selectedLatLng!!, true)
 //         Indicator 설정
         binding.recordDetailImageIndicator.setViewPager(binding.recordDetailViewpager2)
-        binding.recordDetailImageIndicator.createIndicators(parentActivity.db.getSpecificLocationPictureCount(parentActivity.selectedLatLng[0], parentActivity.selectedLatLng[1]),0)
+        binding.recordDetailImageIndicator.createIndicators(db.getSpecificLocationPictureCount(selectedLatLng[0], selectedLatLng[1]),0)
 
 
-        return inflater.inflate(R.layout.fragment_picture_view, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding=null
     }
 }

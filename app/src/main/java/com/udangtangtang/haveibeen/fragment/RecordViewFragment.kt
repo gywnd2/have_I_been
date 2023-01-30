@@ -2,6 +2,8 @@ package com.udangtangtang.haveibeen.fragment
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.Application
+import android.icu.text.AlphabeticIndex.Record
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.udangtangtang.haveibeen.R
 import com.udangtangtang.haveibeen.activity.RecordDetailActivity
 import com.udangtangtang.haveibeen.databinding.FragmentRecordViewBinding
+import com.udangtangtang.haveibeen.repository.RecordRepository
 import com.udangtangtang.haveibeen.util.ViewPagerAdapter
 import com.udangtangtang.haveibeen.viewmodel.RecordViewModel
 import com.udangtangtang.haveibeen.viewmodel.RecordViewModelFactory
@@ -24,11 +27,13 @@ class RecordViewFragment : Fragment() {
         private const val TAG="RecordViewFragment"
     }
 
-    private lateinit var binding : FragmentRecordViewBinding
+    private var _binding : FragmentRecordViewBinding?=null
+    private val binding get()=_binding!!
     private lateinit var recordViewModel : RecordViewModel
     private lateinit var dialog: AlertDialog
     private lateinit var builder: AlertDialog.Builder
     private lateinit var parentActivity : RecordDetailActivity
+    private lateinit var db : RecordRepository
 
 
     override fun onCreateView(
@@ -36,11 +41,13 @@ class RecordViewFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding=DataBindingUtil.setContentView(context as Activity, R.layout.fragment_record_view)
+        _binding=DataBindingUtil.inflate(inflater, R.layout.fragment_record_view, container, false)
         parentActivity=activity as RecordDetailActivity
+        db= RecordRepository(parentActivity.application)
+        val selectedLatLng = parentActivity.intent.getDoubleArrayExtra("selectedLatLng")
 
         // UI 업데이트를 위한 Observer
-        val factory =  RecordViewModelFactory(parentActivity.db, parentActivity.selectedLatLng)
+        val factory =  RecordViewModelFactory(db, selectedLatLng!!)
         recordViewModel= ViewModelProvider(this, factory).get(RecordViewModel::class.java)
         binding.viewModel= recordViewModel
         binding.isEditing=false
@@ -51,12 +58,12 @@ class RecordViewFragment : Fragment() {
 
         // 전달받은 위/경도 정보를 ViewPager 어댑터로 전달
         // 같은 위/경도에 해당하는 모든 사진을 ViewPager에 추가
-        binding.recordDetailViewpager2.adapter = ViewPagerAdapter(parentActivity, parentActivity.db,
-            parentActivity.selectedLatLng, false)
+        binding.recordDetailViewpager2.adapter = ViewPagerAdapter(parentActivity, db,
+            selectedLatLng, false)
 
 //         Indicator 설정
         binding.recordDetailImageIndicator.setViewPager(binding.recordDetailViewpager2)
-        binding.recordDetailImageIndicator.createIndicators(parentActivity.db.getSpecificLocationPictureCount(parentActivity.selectedLatLng[0], parentActivity.selectedLatLng[1]),0)
+        binding.recordDetailImageIndicator.createIndicators(db.getSpecificLocationPictureCount(selectedLatLng[0], selectedLatLng[1]),0)
 
 //         수정 클릭시 수정 시작
         binding.recordDetailButtonEdit.setOnClickListener {
@@ -85,6 +92,11 @@ class RecordViewFragment : Fragment() {
 
         }
 
-        return inflater.inflate(R.layout.fragment_record_view, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding=null
     }
 }

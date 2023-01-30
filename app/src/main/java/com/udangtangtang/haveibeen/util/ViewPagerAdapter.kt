@@ -29,7 +29,7 @@ class ViewPagerAdapter(
 
     init {
         pictures=db.getPictureOfSpecificLocation(latLng[0], latLng[1])
-        Log.d(TAG, pictures.toString())
+        Log.d(TAG, pictures.toString()+"pos : "+latLng[0]+"/"+latLng[1])
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderPage {
@@ -42,6 +42,7 @@ class ViewPagerAdapter(
 
     override fun onBindViewHolder(holder: ViewHolderPage, position: Int) {
         holder.onBind(pictures[position])
+        Log.d(TAG, "binding "+pictures[position]+" at position : "+position)
     }
 
     override fun getItemCount(): Int {
@@ -50,6 +51,7 @@ class ViewPagerAdapter(
 
     inner class ViewHolderPage internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun onBind(filename: String?) {
+            Log.d(TAG, "binding "+filename+" at position : "+position)
             // 사진 파일 전체 경로로 이미지 설정
             Glide.with(context)
                 .load(File(filename!!))

@@ -10,14 +10,15 @@ import com.udangtangtang.haveibeen.entity.RecordEntity
 import com.udangtangtang.haveibeen.fragment.PictureViewFragment
 import com.udangtangtang.haveibeen.fragment.RecordViewFragment
 import com.udangtangtang.haveibeen.repository.RecordRepository
+import kotlinx.coroutines.runBlocking
 
 
 class RecordDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRecordDetailBinding
     private lateinit var fragmentManager: FragmentManager
-    lateinit var selectedLatLng: DoubleArray
-    lateinit var db : RecordRepository
-    lateinit var record : RecordEntity
+    private lateinit var db : RecordRepository
+    lateinit var pictureFragment : PictureViewFragment
+    lateinit var recordFragment : RecordViewFragment
 
     companion object{
         private const val TAG = "RecordDetailActivity"
@@ -27,21 +28,21 @@ class RecordDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityRecordDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        db= RecordRepository(application)
         fragmentManager=supportFragmentManager
-        // DB 연결
-        db=RecordRepository(application)
-
-        val recordFragment=RecordViewFragment()
-        val pictureFragment=PictureViewFragment()
 
         // MainActivity로 부터 fileName 받아오기
-        selectedLatLng = intent.getDoubleArrayExtra("selectedLatLng")!!
-        record=db.getRecord(selectedLatLng!![0], selectedLatLng[1])
+        val selectedLatLng = intent.getDoubleArrayExtra("selectedLatLng")!!
+        val record=db.getRecord(selectedLatLng!![0], selectedLatLng[1])
 
         // 액티비티 타이틀 설정
         title = if (record.locationName == null) getString(R.string.no_location_info) else getString(
             R.string.no_location_info
         )
+
+
+        pictureFragment=PictureViewFragment()
+        recordFragment=RecordViewFragment()
 
         // Fragment 추가
         fragmentManager.beginTransaction()
@@ -54,7 +55,7 @@ class RecordDetailActivity : AppCompatActivity() {
 
     fun changeFragment(){
         fragmentManager.beginTransaction()
-            .replace(R.id.container_record_fragments, PictureViewFragment)
+            .replace(R.id.container_record_fragments, pictureFragment)
             .addToBackStack(null)
             .commit()
     }
