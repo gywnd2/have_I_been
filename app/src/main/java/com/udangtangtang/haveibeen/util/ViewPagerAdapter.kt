@@ -1,6 +1,7 @@
 package com.udangtangtang.haveibeen.util
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.udangtangtang.haveibeen.R
 import com.udangtangtang.haveibeen.activity.RecordDetailActivity
-import com.udangtangtang.haveibeen.databinding.Viewpager2RecordDetailBinding
+import com.udangtangtang.haveibeen.databinding.ViewpagerImageHolderBinding
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import com.udangtangtang.haveibeen.util.ViewPagerAdapter.ViewHolderPage
 import java.io.File
@@ -21,7 +22,7 @@ class ViewPagerAdapter(
     private val isPictureView: Boolean
 ) : RecyclerView.Adapter<ViewHolderPage>() {
 
-    private lateinit var binding : Viewpager2RecordDetailBinding
+    private lateinit var binding : ViewpagerImageHolderBinding
     private val pictures : List<String>
     companion object{
         private const val TAG ="ViewPagerAdapter"
@@ -33,7 +34,7 @@ class ViewPagerAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderPage {
-        binding= Viewpager2RecordDetailBinding.inflate(LayoutInflater.from(context), parent, false)
+        binding= ViewpagerImageHolderBinding.inflate(LayoutInflater.from(context), parent, false)
         binding.viewpager2RecordDetailImage.setOnClickListener{
             if(!isPictureView) (parent.context as RecordDetailActivity).changeFragment()
         }
@@ -51,7 +52,6 @@ class ViewPagerAdapter(
 
     inner class ViewHolderPage internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun onBind(filename: String?) {
-            Log.d(TAG, "binding "+filename+" at position : "+position)
             // 사진 파일 전체 경로로 이미지 설정
             Glide.with(context)
                 .load(File(filename!!))

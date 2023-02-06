@@ -11,12 +11,14 @@ import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import android.widget.Toast.makeText
 import androidx.annotation.RequiresApi
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.google.android.material.snackbar.Snackbar
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.NaverMap
@@ -107,9 +109,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         }
 
 //         Floating Button (Ranking), 클릭 시 랭킹 액티비티 전환
-        binding.mainFabRanking.setOnClickListener{
-            startActivity(Intent(this, RankingActivity::class.java))
-        }
+//        binding.mainFabRanking.setOnClickListener{
+//            startActivity(Intent(this, RankingActivity::class.java))
+//        }
     }
 
     @UiThread
@@ -223,7 +225,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
     override fun onBackPressed() {
         if (System.currentTimeMillis() > backKeyTime + 2000) {
             backKeyTime = System.currentTimeMillis()
-            Toast.makeText(this, getString(R.string.backkeypressed), Toast.LENGTH_LONG).show()
+            Snackbar.make(binding.root, getString(R.string.backkeypressed), Snackbar.LENGTH_LONG)
             return
         }
         if (System.currentTimeMillis() <= backKeyTime + 2000) {

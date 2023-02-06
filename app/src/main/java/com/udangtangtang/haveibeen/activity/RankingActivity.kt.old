@@ -5,30 +5,20 @@ import android.os.Bundle
 import com.udangtangtang.haveibeen.R
 import com.udangtangtang.haveibeen.databinding.ActivityRankingBinding
 import com.udangtangtang.haveibeen.database.PictureDatabase
+import com.udangtangtang.haveibeen.repository.RecordRepository
 import java.util.*
 
 class RankingActivity : AppCompatActivity() {
     private var binding: ActivityRankingBinding? = null
-    private var addressList: ArrayList<String>? = null
-    private lateinit var pictureDB: PictureDatabase
-    private var count: String? = null
-    private var addr: String? = null
-    private var rank: String? = null
-    private var rankNum = 1
+    private lateinit var db : RecordRepository
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityRankingBinding.inflate(
-            layoutInflater
-        )
+        binding = ActivityRankingBinding.inflate(layoutInflater)
         setContentView(binding!!.root)
         setTitle(R.string.ranking_title)
 
         // DB접근을 위한 Helper 초기화
-        pictureDB= PictureDatabase.getInstance(this)!!
-        addressList=pictureDB.getPictureDao().getAddressCount() as ArrayList<String>
-
-//        val sqlDB = dbHelper!!.readableDatabase
-//        val cursor = sqlDB.rawQuery("select * from addressDB", null)
+        db= RecordRepository(application)
 
         // 주소 DB를 받아올 ArrayList 초기화, TextView로 출력할 string 초기화
         rank = "---" + System.lineSeparator()
