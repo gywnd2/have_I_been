@@ -12,27 +12,27 @@ import com.udangtangtang.haveibeen.entity.PictureEntity
 @Dao
 interface PictureDao {
     @Insert(onConflict = REPLACE)
-    fun insert(picture : PictureEntity)
+    suspend fun insert(picture : PictureEntity)
     @Delete
-    fun delete(pictureEntity: PictureEntity)
+    suspend fun delete(pictureEntity: PictureEntity)
     @Query("SELECT COUNT(*) FROM pictureDB")
-    fun getPictureNumbers() : Int
+    suspend fun getPictureNumbers() : Int
     @Query("SELECT fileName FROM pictureDB")
-    fun getFileList() : List<String>
+    suspend fun getFileList() : List<String>
     @Query("SELECT COUNT(fileName) FROM pictureDB WHERE latitude =:lat AND longtitude =:lng")
-    fun getFileCountOnLocation(lat:Double, lng:Double) : Int
+    suspend fun getFileCountOnLocation(lat:Double, lng:Double) : Int
     @Query("SELECT absolutePath FROM pictureDB WHERE latitude =:lat AND longtitude =:lng")
-    fun getFileOnLocation(lat:Double, lng:Double) : List<String>
+    suspend fun getFileOnLocation(lat:Double, lng:Double) : List<String>
     @Query("SELECT latitude, longtitude FROM pictureDB WHERE fileName =:absoluteFilePath")
-    fun getPictureLatLng(absoluteFilePath : String) : LatLngTuple
+    suspend fun getPictureLatLng(absoluteFilePath : String) : LatLngTuple
     @Query("SELECT datetime FROM pictureDB WHERE latitude =:lat AND longtitude =:lng")
-    fun getDatetime(lat : Double, lng : Double) : String
+    suspend fun getDatetime(lat : Double, lng : Double) : String
     @Query("SELECT address, COUNT(address) as count FROM pictureDB")
-    fun getAddressCount() : List<AddressRankTuple>
+    suspend fun getAddressCount() : List<AddressRankTuple>
     @Query("SELECT address FROM pictureDB WHERE latitude =:lat AND longtitude =:lng")
-    fun getAddress(lat:Double, lng:Double):String
+    suspend fun getAddress(lat:Double, lng:Double):String
     @Query("SELECT EXISTS (SELECT * FROM pictureDB WHERE fileName =:name AND latitude =:lat AND longtitude =:lng)")
-    fun isExist(lat: Double, lng: Double, name:String) : Boolean
+    suspend fun isExist(lat: Double, lng: Double, name:String) : Boolean
     @Query("UPDATE pictureDB SET address =:addr WHERE latitude =:lat AND longtitude =:lng")
-    fun updateAddress(lat:Double, lng: Double, addr : String)
+    suspend fun updateAddress(lat:Double, lng: Double, addr : String)
 }

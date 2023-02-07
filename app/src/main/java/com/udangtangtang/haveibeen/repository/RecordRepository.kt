@@ -25,7 +25,7 @@ class RecordRepository(application: Application) {
         pictureDao=pictureDB!!.getPictureDao()
     }
 
-    fun getRecord(latitude : Double, longtitude : Double) : RecordEntity{
+    suspend fun getRecord(latitude : Double, longtitude : Double) : RecordEntity{
         return if(recordDao.isExist(latitude, longtitude)){
             recordDao.getEntity(latitude, longtitude)
         }else{
@@ -35,35 +35,35 @@ class RecordRepository(application: Application) {
         }
     }
 
-    fun createRecord(record : RecordEntity){
+    suspend fun createRecord(record : RecordEntity){
         recordDao.insert(record)
     }
 
-    fun deleteRecord(latitude : Double, longtitude : Double){
+    suspend fun deleteRecord(latitude : Double, longtitude : Double){
         recordDao.delete(latitude, longtitude)
     }
 
     // TODO : 세부 수정 가능하도록?
-    fun updateRecord(record:RecordEntity){
+    suspend fun updateRecord(record:RecordEntity){
         recordDao.update(record)
     }
 
-    fun getAddressCount() : List<AddressRankTuple>{
+    suspend fun getAddressCount() : List<AddressRankTuple>{
         return pictureDao.getAddressCount()
     }
 
-    fun addPicture(picture : PictureEntity){
+    suspend fun addPicture(picture : PictureEntity){
         CoroutineScope(Dispatchers.IO).launch {
             pictureDao.insert(picture)
             Log.d(TAG, picture.toString())
         }
     }
 
-    fun isExistPicture(latitude: Double, longtitude: Double, fileName : String):Boolean{
+    suspend fun isExistPicture(latitude: Double, longtitude: Double, fileName : String):Boolean{
         return pictureDao.isExist(latitude, longtitude, fileName)
     }
 
-    fun updatePictureAddress(latitude: Double, longtitude: Double, address: String){
+    suspend fun updatePictureAddress(latitude: Double, longtitude: Double, address: String){
         if(address!=null){
             pictureDao.updateAddress(latitude, longtitude, address)
             Log.d(TAG, "record address updated : "+pictureDao.getAddress(latitude, longtitude))
@@ -72,23 +72,23 @@ class RecordRepository(application: Application) {
         }
     }
 
-    fun getTotalPictureCount() : Int{
+    suspend fun getTotalPictureCount() : Int{
         return pictureDao.getPictureNumbers()
     }
 
-    fun getPictureCoordination(filePath : String) : LatLngTuple {
+    suspend fun getPictureCoordination(filePath : String) : LatLngTuple {
         return pictureDao.getPictureLatLng(filePath)
     }
 
-    fun getPictureList() : List<String>{
+    suspend fun getPictureList() : List<String>{
         return pictureDao.getFileList()
     }
 
-    fun getSpecificLocationPictureCount(latitude: Double, longtitude: Double):Int{
+    suspend fun getSpecificLocationPictureCount(latitude: Double, longtitude: Double):Int{
         return pictureDao.getFileCountOnLocation(latitude, longtitude)
     }
 
-    fun getPictureOfSpecificLocation(latitude: Double, longtitude: Double):List<String>{
+    suspend fun getPictureOfSpecificLocation(latitude: Double, longtitude: Double):List<String>{
         return pictureDao.getFileOnLocation(latitude, longtitude)
     }
 }

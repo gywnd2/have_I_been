@@ -9,13 +9,13 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface RecordDao {
     @Insert(onConflict=REPLACE)
-    fun insert(record : RecordEntity)
+    suspend fun insert(record : RecordEntity)
     @Query("DELETE FROM recordDB WHERE latitude =:lat AND longtitude =:lng")
-    fun delete(lat : Double, lng : Double)
+    suspend fun delete(lat : Double, lng : Double)
     @Update
-    fun update(record:RecordEntity)
+    suspend fun update(record:RecordEntity)
     @Query("SELECT * FROM recordDB WHERE latitude =:lat AND longtitude =:lng")
-    fun getEntity(lat : Double, lng : Double): RecordEntity
+    suspend fun getEntity(lat : Double, lng : Double): RecordEntity
     @Query("SELECT EXISTS(SELECT * FROM recordDB WHERE latitude =:lat AND longtitude =:lng)")
-    fun isExist(lat : Double, lng : Double): Boolean
+    suspend fun isExist(lat : Double, lng : Double): Boolean
 }
