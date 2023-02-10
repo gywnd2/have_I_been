@@ -10,7 +10,7 @@ import com.udangtangtang.haveibeen.entity.RecordEntity
 import com.udangtangtang.haveibeen.fragment.PictureViewFragment
 import com.udangtangtang.haveibeen.fragment.RecordViewFragment
 import com.udangtangtang.haveibeen.repository.RecordRepository
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 
 
 class RecordDetailActivity : AppCompatActivity() {
@@ -29,16 +29,18 @@ class RecordDetailActivity : AppCompatActivity() {
         binding = ActivityRecordDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
         db= RecordRepository(application)
-        fragmentManager=supportFragmentManager
+            fragmentManager=supportFragmentManager
 
-        // MainActivity로 부터 fileName 받아오기
-        val selectedLatLng = intent.getDoubleArrayExtra("selectedLatLng")!!
-        val record=db.getRecord(selectedLatLng!![0], selectedLatLng[1])
+            // MainActivity로 부터 fileName 받아오기
+            val selectedLatLng = intent.getDoubleArrayExtra("selectedLatLng")!!
+                    CoroutineScope(Dispatchers.IO).launch {
+                async {
+                    val record=db.getRecord(selectedLatLng!![0], selectedLatLng[1])
+                    // 액티비티 타이틀 설정
+                    this@RecordDetailActivity.title = if (record.locationName == null) getString(R.string.no_location_info) else getString(R.string.no_location_info)
+            }.await()
+        }
 
-        // 액티비티 타이틀 설정
-        title = if (record.locationName == null) getString(R.string.no_location_info) else getString(
-            R.string.no_location_info
-        )
 
 
         pictureFragment=PictureViewFragment()

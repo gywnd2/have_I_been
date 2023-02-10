@@ -39,7 +39,7 @@ class GeocodingHelper(private val context: Context) {
 
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    fun getAddress(latitude: Double, longtitude: Double):String {
+    fun getAddress(latitude: Double, longtitude: Double) {
         // Geocoder를 통해 주소 획득
         geocoder.getFromLocation(
             latitude,
@@ -47,7 +47,9 @@ class GeocodingHelper(private val context: Context) {
             3,
             object : Geocoder.GeocodeListener {
                 override fun onGeocode(addressList: MutableList<Address>) {
-                    db.updatePictureAddress(latitude, longtitude, addressList.get(0).getAddressLine(0).substring(5))
+                    CoroutineScope(Dispatchers.IO).launch {
+                        db.updatePictureAddress(latitude, longtitude, addressList.get(0).getAddressLine(0).substring(5))
+                    }
 //                var result=""
 //                Log.d(TAG, "!!!!!!!addressList:"+addressList.toString())
 //                if (addressList.isNotEmpty()) {
@@ -82,8 +84,7 @@ class GeocodingHelper(private val context: Context) {
                     super.onError(errorMessage)
                 }
             })
-                Log.d(TAG, "return address : " + result)
-        return result
+            Log.d(TAG, "return address : " + result)
         }
 
 

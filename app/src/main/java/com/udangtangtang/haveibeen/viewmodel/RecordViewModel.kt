@@ -7,6 +7,10 @@ import androidx.lifecycle.*
 
 import com.udangtangtang.haveibeen.entity.RecordEntity
 import com.udangtangtang.haveibeen.repository.RecordRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class RecordViewModel(val db:RecordRepository, val selectedLatLng : DoubleArray) : ViewModel(){
     private val _currentRecord=MutableLiveData<RecordEntity>()
@@ -19,14 +23,18 @@ class RecordViewModel(val db:RecordRepository, val selectedLatLng : DoubleArray)
         get()=_currentRecord
 
     init{
-        _currentRecord.value=db.getRecord(selectedLatLng[0], selectedLatLng[1])
+        runBlocking {
+            _currentRecord.value=db.getRecord(selectedLatLng[0], selectedLatLng[1])
+        }
     }
 
     fun updateRecord(locName: String, rating: Float, comment: String){
         _currentRecord.value!!.locationName =locName
         _currentRecord.value!!.rating=rating
         _currentRecord.value!!.comment=comment
-        db.updateRecord(_currentRecord.value!!)
+        CoroutineScope(Dispatchers.IO).launch {
+            db.updateRecord(_currentRecord.value!!)
+        }
     }
 
     fun setViewRecord(record : RecordEntity){

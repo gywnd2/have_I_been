@@ -1,21 +1,17 @@
 package com.udangtangtang.haveibeen.fragment
 
-import android.app.Activity
-import android.app.Application
-import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import com.udangtangtang.haveibeen.R
 import com.udangtangtang.haveibeen.activity.RecordDetailActivity
 import com.udangtangtang.haveibeen.databinding.FragmentPictureViewBinding
-import com.udangtangtang.haveibeen.databinding.FragmentRecordViewBinding
 import com.udangtangtang.haveibeen.repository.RecordRepository
-import com.udangtangtang.haveibeen.util.ViewPagerAdapter
+import com.udangtangtang.haveibeen.util.RecordPictureAdapter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class PictureViewFragment : Fragment(){
     private var _binding : FragmentPictureViewBinding?=null
@@ -39,10 +35,12 @@ class PictureViewFragment : Fragment(){
 
         // 전달받은 위/경도 정보를 ViewPager 어댑터로 전달
         // 같은 위/경도에 해당하는 모든 사진을 ViewPager에 추가
-        binding.recordDetailViewpager2.adapter = ViewPagerAdapter(parentActivity, db, selectedLatLng!!, true)
+        binding.recordDetailViewpager2.adapter = RecordPictureAdapter(parentActivity, db, selectedLatLng!!, true)
 //         Indicator 설정
         binding.recordDetailImageIndicator.setViewPager(binding.recordDetailViewpager2)
-        binding.recordDetailImageIndicator.createIndicators(db.getSpecificLocationPictureCount(selectedLatLng[0], selectedLatLng[1]),0)
+        CoroutineScope(Dispatchers.Main).launch {
+            binding.recordDetailImageIndicator.createIndicators(db.getSpecificLocationPictureCount(selectedLatLng[0], selectedLatLng[1]),0)
+        }
 
 
         return binding.root

@@ -13,6 +13,7 @@ import androidx.exifinterface.media.ExifInterface
 import com.udangtangtang.haveibeen.entity.PictureEntity
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import kotlinx.coroutines.*
+import okhttp3.Dispatcher
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -74,28 +75,29 @@ class PictureScanHelper(private val context: Context) {
 
                     // 좌표 정보를 통해 주소를 얻고 이를 파일명, 위/경도 정보, 촬영 일시 등을 모두 DB에 추가
 //                    geocodingHelper = GeocodingHelper(context)
-                    if (latLong?.isNotEmpty() == true
-                        and !db.isExistPicture(latLong!!.get(0), latLong!!.get(1), nameOfFile)) {
-                        val picture = PictureEntity(
-                            latLong!!.get(0),
-                            latLong!!.get(1),
-                            absolutePathOfImage,
-                            nameOfFile,
-                            null,
-                            datetime
-                        )
-                        pictureList.add(picture)
-                        geocodingHelper.getAddress(latLong!!.get(0), latLong!!.get(1))
-                        db.addPicture(picture)
+                    var isPictureExist : Boolean
+                    CoroutineScope(Dispatchers.IO).launch {
+                        if (latLong?.isNotEmpty() == true and !db.isExistPicture(latLong!!.get(0), latLong!!.get(1), nameOfFile)) {
+                            val picture = PictureEntity(
+                                latLong!!.get(0),
+                                latLong!!.get(1),
+                                absolutePathOfImage,
+                                nameOfFile,
+                                null,
+                                datetime
+                            )
+                            pictureList.add(picture)
+                            geocodingHelper.getAddress(latLong!!.get(0), latLong!!.get(1))
+                            db.addPicture(picture)
 
-                    } else {
-                        // 좌표 정보가 없을 경우
-                        Log.d(
-                            TAG,
-                            "Image " + absolutePathOfImage + " has no coordination info."
-                        )
+                        } else {
+                            // 좌표 정보가 없을 경우
+                            Log.d(
+                                TAG,
+                                "Image " + absolutePathOfImage + " has no coordination info."
+                            )
+                        }
                     }
-
 
                 }
             }

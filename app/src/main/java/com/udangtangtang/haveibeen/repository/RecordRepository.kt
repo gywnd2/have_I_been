@@ -91,4 +91,8 @@ class RecordRepository(application: Application) {
     suspend fun getPictureOfSpecificLocation(latitude: Double, longtitude: Double):List<String>{
         return pictureDao.getFileOnLocation(latitude, longtitude)
     }
+
+    suspend fun getAdderessRanking():List<String>{
+        return pictureDao.getAddressCountByGroup()
+    }
 }
