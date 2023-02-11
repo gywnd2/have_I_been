@@ -10,6 +10,7 @@ import android.text.TextUtils
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.exifinterface.media.ExifInterface
+import com.udangtangtang.haveibeen.activity.MainActivity
 import com.udangtangtang.haveibeen.entity.PictureEntity
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import kotlinx.coroutines.*
@@ -20,15 +21,13 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-class PictureScanHelper(private val context: Context) {
+class PictureScanHelper(private val context: Context, private val db:RecordRepository) {
     // TODO : 미디어 저장소 업데이트 감지, 동영상 스캔 추가, AsyncTask->Coroutine, 이전 버전?
     // https://developer.android.com/training/data-storage/shared/media?hl=ko#detect-updates-media-files
     private val TAG = "PictureScanHelper"
     private var geocodingHelper: GeocodingHelper
-    private val db:RecordRepository
 
     init{
-        db=RecordRepository(context as Application)
         geocodingHelper= GeocodingHelper(context)
     }
 
@@ -57,7 +56,10 @@ class PictureScanHelper(private val context: Context) {
                     cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME))
                 var datetime=
                     cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED))
+                val pictureAmount=cursor.count.toFloat()
                 if (!TextUtils.isEmpty(absolutePathOfImage)) {
+                    // Update Progress
+                    (MainActivity.mContext as MainActivity).updateProgress(cursor.position.toFloat()/pictureAmount)
                     // 위/경도, 일시, 주소 얻기
                     var latLong: DoubleArray? = null
                     var address=""

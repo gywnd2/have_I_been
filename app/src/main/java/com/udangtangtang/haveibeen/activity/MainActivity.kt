@@ -1,6 +1,9 @@
 package com.udangtangtang.haveibeen.activity
 
 import android.Manifest.permission.*
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -12,10 +15,12 @@ import android.service.notification.NotificationListenerService
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
@@ -33,11 +38,11 @@ import com.naver.maps.map.util.FusedLocationSource
 import com.udangtangtang.haveibeen.R
 import com.udangtangtang.haveibeen.databinding.ActivityMainBinding
 import com.udangtangtang.haveibeen.databinding.MarkerInfowindowBinding
-import com.udangtangtang.haveibeen.fragment.InitScanDialogFragment
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import com.udangtangtang.haveibeen.util.PictureScanHelper
 import com.udangtangtang.haveibeen.util.RankingCardAdapter
 import kotlinx.coroutines.*
+import kotlin.math.roundToInt
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickListener {
     // TODO : DB 코루틴, 초기 실행 시 사진 스캔(로딩화면?), 사진 변경 감지 어떻게?
@@ -50,7 +55,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
     private lateinit var pictureScanHelper: PictureScanHelper
     private var backKeyTime: Long = 0
     private val TAG="MainActivity"
-    private lateinit var scanDialog : InitScanDialogFragment
     private lateinit var db : RecordRepository
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -68,10 +72,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setTitle(R.string.app_name)
+        supportActionBar?.elevation=0.0f
 
         // Init
         db= RecordRepository(application)
-        scanDialog= InitScanDialogFragment()
         sharedPreferences= EncryptedSharedPreferences.create(
             this,
             FILENAME,
@@ -80,19 +84,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
 
-        pictureScanHelper = PictureScanHelper(applicationContext)
+        pictureScanHelper = PictureScanHelper(applicationContext, db)
         val gen=MediaStore.getGeneration(applicationContext, MediaStore.VOLUME_EXTERNAL).toString()
         with(sharedPreferences){
-            if(getString(MEDIASTORE_GEN_ATTR, "null")!=gen){
-                scanDialog.show(supportFragmentManager, "InitScanDialog")
-                CoroutineScope(Dispatchers.Main).launch {
-                        async{
+            if(getString(MEDIASTORE_GEN_ATTR, "null")!=gen) {
+                binding.containerMainScanProgress.visibility=View.VISIBLE
+                binding.containerMainScanProgress.startAnimation(AnimationUtils.loadAnimation(applicationContext, R.anim.anim_slide_down))
+                    CoroutineScope(Dispatchers.Main).launch {
+                        async {
                             edit().putString(MEDIASTORE_GEN_ATTR, gen)
                             edit().apply()
                             pictureScanHelper.scanPictures()
-                            delay(3000L)
+                            delay(5000L)
                         }.await()
-                    scanDialog.dismiss()
+                        binding.containerMainScanProgress.startAnimation(AnimationUtils.loadAnimation(applicationContext, R.anim.anim_slide_up))
+                        binding.containerMainScanProgress.visibility = View.GONE
                     }
                 }
             }
@@ -117,14 +123,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         // Viewpager
         binding.mainViewpager.adapter=RankingCardAdapter(this, db)
 
-        // anim test
-        binding.testButtonDown.setOnClickListener {
-            scanDialog.show(supportFragmentManager, "InitScanDialog")
-        }
-
-        binding.testButtonUp.setOnClickListener {
-            scanDialog.dismiss()
-        }
     }
 
     @UiThread
@@ -254,4 +252,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
         }
     }
 
+    @SuppressLint("SetTextI18n")
+    fun updateProgress(progressInFloat:Float){
+        binding.viewInitscanProgressbar.progress= progressInFloat.toInt()
+        binding.viewInitscanProgressText.text=(progressInFloat*100).roundToInt().toString()+"%"
+    }
 }
