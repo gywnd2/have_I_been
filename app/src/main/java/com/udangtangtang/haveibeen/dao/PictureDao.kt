@@ -1,5 +1,6 @@
 package com.udangtangtang.haveibeen.dao
 
+import android.location.Address
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -30,11 +31,11 @@ interface PictureDao {
     @Query("SELECT address, COUNT(address) as count FROM pictureDB")
     suspend fun getAddressCount() : List<AddressRankTuple>
     @Query("SELECT address FROM pictureDB WHERE latitude =:lat AND longtitude =:lng")
-    suspend fun getAddress(lat:Double, lng:Double):String
+    suspend fun getAddress(lat:Double, lng:Double):Address
     @Query("SELECT EXISTS (SELECT * FROM pictureDB WHERE fileName =:name AND latitude =:lat AND longtitude =:lng)")
     suspend fun isExist(lat: Double, lng: Double, name:String) : Boolean
     @Query("UPDATE pictureDB SET address =:addr WHERE latitude =:lat AND longtitude =:lng")
-    suspend fun updateAddress(lat:Double, lng: Double, addr : String)
+    suspend fun updateAddress(lat:Double, lng: Double, addr : Address)
     @Query("SELECT address, COUNT(address) as count FROM pictureDB GROUP BY address")
     suspend fun getAddressCountByGroup():List<AddressRankTuple>
 }

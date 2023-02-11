@@ -40,6 +40,7 @@ import com.udangtangtang.haveibeen.R
 import com.udangtangtang.haveibeen.databinding.ActivityMainBinding
 import com.udangtangtang.haveibeen.databinding.MarkerInfowindowBinding
 import com.udangtangtang.haveibeen.repository.RecordRepository
+import com.udangtangtang.haveibeen.util.GeocodingHelper
 import com.udangtangtang.haveibeen.util.PictureScanHelper
 import com.udangtangtang.haveibeen.util.RankingCardAdapter
 import kotlinx.coroutines.*
@@ -158,7 +159,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                         if (record.rating == null) infoWindowRatingBar.rating =
                             getString(R.string.no_rating).toFloat()
                         else infoWindowRatingBar.rating = record.rating!!
-                        infoWindowLocationAddress.text = record.address
+                        infoWindowLocationAddress.text = GeocodingHelper.getAddressToString(record.address)
                         infoWindowDatetime.text = record.datetime
                     }
                 }

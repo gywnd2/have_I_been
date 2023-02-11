@@ -30,7 +30,6 @@ class RecordDetailActivity : AppCompatActivity() {
         setContentView(binding.root)
         db= RecordRepository(application)
             fragmentManager=supportFragmentManager
-
             // MainActivity로 부터 fileName 받아오기
             val selectedLatLng = intent.getDoubleArrayExtra("selectedLatLng")!!
                     CoroutineScope(Dispatchers.IO).launch {
