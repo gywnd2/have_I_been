@@ -11,6 +11,7 @@ import android.provider.MediaStore
 import android.service.notification.NotificationListenerService
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.annotation.UiThread
@@ -79,25 +80,23 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
 
-
         pictureScanHelper = PictureScanHelper(applicationContext)
         val gen=MediaStore.getGeneration(applicationContext, MediaStore.VOLUME_EXTERNAL).toString()
         with(sharedPreferences){
             if(getString(MEDIASTORE_GEN_ATTR, "null")!=gen){
                 scanDialog.show(supportFragmentManager, "InitScanDialog")
-                CoroutineScope(Dispatchers.IO).launch {
-                    async{
-                        edit().putString(MEDIASTORE_GEN_ATTR, gen)
-                        edit().apply()
-                        pictureScanHelper.scanPictures()
-                        delay(3000L)
+                CoroutineScope(Dispatchers.Main).launch {
+                        async{
+                            edit().putString(MEDIASTORE_GEN_ATTR, gen)
+                            edit().apply()
+                            pictureScanHelper.scanPictures()
+                            delay(3000L)
                         }.await()
                     scanDialog.dismiss()
                     }
                 }
             }
         Log.d(TAG, "dialog close")
-//        scanDialog.dismiss()
 
         Toast.makeText(this, MediaStore.getVersion(this, MediaStore.VOLUME_EXTERNAL), Toast.LENGTH_LONG).show()
 
@@ -117,6 +116,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
 
         // Viewpager
         binding.mainViewpager.adapter=RankingCardAdapter(this, db)
+
+        // anim test
+        binding.testButtonDown.setOnClickListener {
+            scanDialog.show(supportFragmentManager, "InitScanDialog")
+        }
+
+        binding.testButtonUp.setOnClickListener {
+            scanDialog.dismiss()
+        }
     }
 
     @UiThread

@@ -11,6 +11,20 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <Button
+        android:id="@+id/test_button_down"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:text="표시"/>
+
+    <Button
+        android:id="@+id/test_button_up"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:text="끄기"/>
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/main_fab_settings"
         android:layout_width="wrap_content"
@@ -48,5 +62,14 @@
             android:layout_alignParentBottom="true"/>
 
     </LinearLayout>
+
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/container_main_shimmer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </com.facebook.shimmer.ShimmerFrameLayout>
+
+
 
 </RelativeLayout>
