@@ -8,6 +8,7 @@ import android.graphics.PointF
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.service.notification.NotificationListenerService
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -34,6 +35,7 @@ import com.udangtangtang.haveibeen.databinding.MarkerInfowindowBinding
 import com.udangtangtang.haveibeen.fragment.InitScanDialogFragment
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import com.udangtangtang.haveibeen.util.PictureScanHelper
+import com.udangtangtang.haveibeen.util.RankingCardAdapter
 import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickListener {
@@ -88,13 +90,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                         edit().putString(MEDIASTORE_GEN_ATTR, gen)
                         edit().apply()
                         pictureScanHelper.scanPictures()
+                        delay(3000L)
                         }.await()
                     scanDialog.dismiss()
                     }
                 }
             }
         Log.d(TAG, "dialog close")
-        scanDialog.dismiss()
+//        scanDialog.dismiss()
 
         Toast.makeText(this, MediaStore.getVersion(this, MediaStore.VOLUME_EXTERNAL), Toast.LENGTH_LONG).show()
 
@@ -107,10 +110,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
             startActivity(Intent(this, SettingActivity::class.java))
         }
 
-//         Floating Button (Ranking), 클릭 시 랭킹 액티비티 전환
-//        binding.mainFabRanking.setOnClickListener{
-//            startActivity(Intent(this, RankingActivity::class.java))
-//        }
+//         Floating Button (NotificationListenerService.Ranking), 클릭 시 랭킹 액티비티 전환
+        binding.mainFabRanking.setOnClickListener{
+            startActivity(Intent(this, RankingActivity::class.java))
+        }
+
+        // Viewpager
+        binding.mainViewpager.adapter=RankingCardAdapter(this, db)
     }
 
     @UiThread

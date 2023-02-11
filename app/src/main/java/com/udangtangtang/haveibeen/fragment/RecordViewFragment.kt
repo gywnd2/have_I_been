@@ -58,8 +58,7 @@ class RecordViewFragment : Fragment() {
 
         // 전달받은 위/경도 정보를 ViewPager 어댑터로 전달
         // 같은 위/경도에 해당하는 모든 사진을 ViewPager에 추가
-        binding.recordDetailViewpager2.adapter = RecordPictureAdapter(parentActivity, db,
-            selectedLatLng, false)
+        binding.recordDetailViewpager2.adapter = RecordPictureAdapter(parentActivity, db, selectedLatLng, false)
 
 //         Indicator 설정
         binding.recordDetailImageIndicator.setViewPager(binding.recordDetailViewpager2)

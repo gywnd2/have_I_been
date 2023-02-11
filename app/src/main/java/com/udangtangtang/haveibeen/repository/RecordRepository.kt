@@ -92,7 +92,7 @@ class RecordRepository(application: Application) {
         return pictureDao.getFileOnLocation(latitude, longtitude)
     }
 
-    suspend fun getAdderessRanking():List<String>{
+    suspend fun getAdderessRanking():List<AddressRankTuple>{
         return pictureDao.getAddressCountByGroup()
     }
 }

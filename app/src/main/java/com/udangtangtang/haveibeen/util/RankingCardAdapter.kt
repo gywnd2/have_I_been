@@ -7,7 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.udangtangtang.haveibeen.databinding.ViewpagerRankHolderBinding
+import com.udangtangtang.haveibeen.model.AddressRankTuple
 import com.udangtangtang.haveibeen.repository.RecordRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
 class RankingCardAdapter(
@@ -20,12 +22,12 @@ class RankingCardAdapter(
     }
 
     private lateinit var binding : ViewpagerRankHolderBinding
-    private var rankInfo : List<String>
+    private var rankInfo : List<AddressRankTuple>
 
     init {
         runBlocking {
             rankInfo=db.getAdderessRanking()
-            Log.d(TAG, rankInfo.toString())
+            Log.d(TAG, rankInfo.size.toString())
         }
     }
 
@@ -35,6 +37,7 @@ class RankingCardAdapter(
     }
 
     override fun onBindViewHolder(holder: RankCardHolder, position: Int) {
+        Log.d(TAG, position.toString())
         holder.onBind(position)
     }
 
@@ -45,8 +48,8 @@ class RankingCardAdapter(
     inner class RankCardHolder internal constructor(itemView:View):RecyclerView.ViewHolder(itemView){
         fun onBind(position:Int){
             binding.textRankingHolderRank.text=(position+1).toString()
-            binding.textRankingHolderPictureCount.text="TODO"
-//            binding.textRankingHolderAddress.text=rankInfo[position].split(" ")
+            binding.textRankingHolderAddress.text=rankInfo[position].address
+            binding.textRankingHolderPictureCount.text=rankInfo[position].count.toString()+"장의 사진"
         }
     }
 }

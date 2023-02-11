@@ -35,6 +35,6 @@ interface PictureDao {
     suspend fun isExist(lat: Double, lng: Double, name:String) : Boolean
     @Query("UPDATE pictureDB SET address =:addr WHERE latitude =:lat AND longtitude =:lng")
     suspend fun updateAddress(lat:Double, lng: Double, addr : String)
-    @Query("SELECT address, COUNT(address) FROM pictureDB GROUP BY address")
-    suspend fun getAddressCountByGroup():List<String>
+    @Query("SELECT address, COUNT(address) as count FROM pictureDB GROUP BY address")
+    suspend fun getAddressCountByGroup():List<AddressRankTuple>
 }

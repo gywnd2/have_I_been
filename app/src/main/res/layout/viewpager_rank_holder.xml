@@ -2,7 +2,7 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     style="?attr/materialCardViewElevatedStyle"
     app:cardElevation="12dp"
@@ -13,52 +13,64 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:padding="10dp">
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/text_ranking_holder_rank"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:text="1"
-                android:textAlignment="center"
+                android:gravity="center"
                 android:textColor="@color/black"
                 android:textStyle="bold"
-                android:textSize="15dp"
+                android:textSize="25dp"
+                android:background="@color/main_viewpager_rank"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintHorizontal_weight="1"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toLeftOf="@id/text_ranking_holder_picture_count"/>
+                app:layout_constraintRight_toLeftOf="@id/container_ranking_holder"/>
 
-            <TextView
-                android:id="@+id/text_ranking_holder_picture_count"
+            <LinearLayout
+                android:id="@+id/container_ranking_holder"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:textAlignment="center"
-                app:layout_constraintHorizontal_weight="1"
-                android:textStyle="bold"
-                android:textSize="15dp"
-                android:textColor="@color/black"
-                android:text="3장"
+                android:layout_height="match_parent"
+                app:layout_constraintHorizontal_weight="5"
+                android:orientation="vertical"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toRightOf="@id/text_ranking_holder_rank"
-                app:layout_constraintRight_toLeftOf="@id/text_ranking_holder_address"/>
+                app:layout_constraintRight_toRightOf="parent"
+                android:padding="15dp">
 
-            <TextView
-                android:id="@+id/text_ranking_holder_address"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:layout_constraintHorizontal_weight="4"
-                android:textStyle="bold"
-                android:textSize="15dp"
-                android:textColor="@color/black"
-                android:text="경기도 안양시 만안구 석수2동"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toRightOf="@id/text_ranking_holder_picture_count"
-                app:layout_constraintRight_toRightOf="parent"/>
+                <TextView
+                    android:id="@+id/text_ranking_holder_address"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintHorizontal_weight="4"
+                    android:textStyle="bold"
+                    android:textSize="15dp"
+                    android:textColor="@color/black"
+                    android:gravity="center"/>
+
+                <TextView
+                    android:id="@+id/text_ranking_holder_picture_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    app:layout_constraintHorizontal_weight="1"
+                    android:textSize="20dp"
+                    android:textColor="@color/black"
+                    android:text="3장의 사진"/>
+
+                <RatingBar
+                    android:id="@+id/ratingbar_ranking_holder"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:rating="3.5"
+                    android:isIndicator="true"/>
+
+            </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
