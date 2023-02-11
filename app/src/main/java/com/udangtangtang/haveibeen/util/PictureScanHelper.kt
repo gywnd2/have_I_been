@@ -28,7 +28,7 @@ class PictureScanHelper(private val context: Context, private val db:RecordRepos
     private var geocodingHelper: GeocodingHelper
 
     init{
-        geocodingHelper= GeocodingHelper(context)
+        geocodingHelper= GeocodingHelper(context, db)
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -59,7 +59,8 @@ class PictureScanHelper(private val context: Context, private val db:RecordRepos
                 val pictureAmount=cursor.count.toFloat()
                 if (!TextUtils.isEmpty(absolutePathOfImage)) {
                     // Update Progress
-                    (MainActivity.mContext as MainActivity).updateProgress(cursor.position.toFloat()/pictureAmount)
+                    (context as MainActivity).updateProgress((cursor.position+1).toFloat()/pictureAmount)
+                    Log.d(TAG, "curr : "+cursor.position.toString()+"/"+pictureAmount.toString())
                     // 위/경도, 일시, 주소 얻기
                     var latLong: DoubleArray? = null
                     var address=""

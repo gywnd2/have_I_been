@@ -19,11 +19,10 @@ import kotlinx.coroutines.Dispatchers.IO
 import java.io.IOException
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-class GeocodingHelper(private val context: Context) {
+class GeocodingHelper(private val context: Context, private val db : RecordRepository) {
     // TODO : 주소 수정 기능
     private var geocoder: Geocoder
     private val TAG = "GeocodingHelper"
-    private val db : RecordRepository
     var result=""
 
     // AdminArea -> 특별, 광역시/도
@@ -33,8 +32,6 @@ class GeocodingHelper(private val context: Context) {
     init {
         // 역 지오코딩
         geocoder = Geocoder(context)
-        db=RecordRepository(context as Application)
-
     }
 
 

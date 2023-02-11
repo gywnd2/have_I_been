@@ -21,6 +21,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.core.view.marginLeft
 import androidx.databinding.DataBindingUtil
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
@@ -84,7 +85,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
 
-        pictureScanHelper = PictureScanHelper(applicationContext, db)
+        // 사진 스캔
+        pictureScanHelper = PictureScanHelper(this, db)
         val gen=MediaStore.getGeneration(applicationContext, MediaStore.VOLUME_EXTERNAL).toString()
         with(sharedPreferences){
             if(getString(MEDIASTORE_GEN_ATTR, "null")!=gen) {
@@ -122,11 +124,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
 
         // Viewpager
         binding.mainViewpager.adapter=RankingCardAdapter(this, db)
-
     }
 
     @UiThread
     override fun onMapReady(naverMap: NaverMap) {
+        // Naver logo
+        naverMap.uiSettings.setLogoMargin(30, 0, 0, binding.mainContainerViewpager.height)
+
         // 마커 정보창 생성
         mInfoWindow = InfoWindow()
         infoWindowBinding = DataBindingUtil.inflate(layoutInflater, R.layout.marker_infowindow, binding.root, false)
@@ -157,7 +161,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                         infoWindowLocationAddress.text = record.address
                         infoWindowDatetime.text = record.datetime
                     }
-
                 }
                 Log.d(TAG, "infowindowdata" + infoWindowBinding.infoWindowData.toString())
                 return infoWindowBinding.root
@@ -254,7 +257,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
 
     @SuppressLint("SetTextI18n")
     fun updateProgress(progressInFloat:Float){
-        binding.viewInitscanProgressbar.progress= progressInFloat.toInt()
+        binding.viewInitscanProgressbar.progress= (progressInFloat*100).roundToInt()
         binding.viewInitscanProgressText.text=(progressInFloat*100).roundToInt().toString()+"%"
     }
 }
