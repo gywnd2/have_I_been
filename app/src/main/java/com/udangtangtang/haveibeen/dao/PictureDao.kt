@@ -1,11 +1,13 @@
 package com.udangtangtang.haveibeen.dao
 
 import android.location.Address
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
+import com.udangtangtang.haveibeen.entity.InfoWindowData
 import com.udangtangtang.haveibeen.model.AddressRankTuple
 import com.udangtangtang.haveibeen.model.LatLngTuple
 import com.udangtangtang.haveibeen.entity.PictureEntity
@@ -38,4 +40,6 @@ interface PictureDao {
     suspend fun updateAddress(lat:Double, lng: Double, addr : Address)
     @Query("SELECT address, COUNT(address) as count FROM pictureDB GROUP BY address")
     suspend fun getAddressCountByGroup():List<AddressRankTuple>
+    @Query("SELECT datetime FROM pictureDB WHERE latitude =:lat AND longtitude =:lng")
+    fun getInfoWindowData(lat:Double, lng: Double):LiveData<InfoWindowData>
 }

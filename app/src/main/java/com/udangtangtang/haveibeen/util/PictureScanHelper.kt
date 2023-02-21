@@ -48,6 +48,7 @@ class PictureScanHelper(private val context: Context, private val db:RecordRepos
             MediaStore.MediaColumns.DATE_TAKEN + " desc"
         )?.use{ cursor->
             var pictureList = mutableListOf<PictureEntity>()
+            Log.d(TAG, cursor.count.toString())
             while (cursor.moveToNext()) {
                 val idColumnIndex=cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
                 val absolutePathOfImage =
@@ -63,7 +64,6 @@ class PictureScanHelper(private val context: Context, private val db:RecordRepos
                     Log.d(TAG, "curr : "+cursor.position.toString()+"/"+pictureAmount.toString())
                     // 위/경도, 일시, 주소 얻기
                     var latLong: DoubleArray? = null
-                    var address=""
                     datetime=DateTimeFormatter.ofPattern("yyyy년 M월 dd일 HH:mm").format(
                         LocalDateTime.ofInstant(Instant.ofEpochMilli(datetime.toLong() * 1000), ZoneOffset.UTC)
                     )
@@ -77,7 +77,6 @@ class PictureScanHelper(private val context: Context, private val db:RecordRepos
                     }
 
                     // 좌표 정보를 통해 주소를 얻고 이를 파일명, 위/경도 정보, 촬영 일시 등을 모두 DB에 추가
-//                    geocodingHelper = GeocodingHelper(context)
                     var isPictureExist : Boolean
                     CoroutineScope(Dispatchers.IO).launch {
                         if (latLong?.isNotEmpty() == true and !db.isExistPicture(latLong!!.get(0), latLong!!.get(1), nameOfFile)) {
@@ -92,7 +91,6 @@ class PictureScanHelper(private val context: Context, private val db:RecordRepos
                             pictureList.add(picture)
                             geocodingHelper.getAddress(latLong!!.get(0), latLong!!.get(1))
                             db.addPicture(picture)
-
                         } else {
                             // 좌표 정보가 없을 경우
                             Log.d(

@@ -14,7 +14,6 @@ import com.udangtangtang.haveibeen.databinding.ActivitySplashBinding
 import kotlinx.coroutines.*
 
 class SplashActivity : AppCompatActivity() {
-    // TODO : 한번 더 물어보기
     private lateinit var binding : ActivitySplashBinding
     private val TAG = "SplashActivity"
 

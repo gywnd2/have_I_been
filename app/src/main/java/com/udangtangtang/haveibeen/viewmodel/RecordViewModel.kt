@@ -7,10 +7,7 @@ import androidx.lifecycle.*
 
 import com.udangtangtang.haveibeen.entity.RecordEntity
 import com.udangtangtang.haveibeen.repository.RecordRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 
 class RecordViewModel(val db:RecordRepository, val selectedLatLng : DoubleArray) : ViewModel(){
     private val _currentRecord=MutableLiveData<RecordEntity>()
@@ -23,8 +20,13 @@ class RecordViewModel(val db:RecordRepository, val selectedLatLng : DoubleArray)
         get()=_currentRecord
 
     init{
-        runBlocking {
-            _currentRecord.value=db.getRecord(selectedLatLng[0], selectedLatLng[1])
+        Log.d(TAG, "Recordviewmodel init")
+        CoroutineScope(Dispatchers.IO).launch {
+            _currentRecord.postValue(async {
+                db.getRecord(selectedLatLng[0], selectedLatLng[1]).value
+        }.await())
+
+        Log.d(TAG, db.getRecord(selectedLatLng[0], selectedLatLng[1]).value.toString())
         }
     }
 
@@ -41,7 +43,7 @@ class RecordViewModel(val db:RecordRepository, val selectedLatLng : DoubleArray)
         if (_currentRecord.value!=record){
             _currentRecord.value=record
         }
-        Log.d(TAG, _currentRecord.toString()+"\n"+record.toString())
+        Log.d(TAG, "setrecord: "+_currentRecord.toString()+"\n"+record.toString())
     }
 
 

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.PointF
+import android.icu.text.IDNA.Info
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -23,6 +24,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.core.view.marginLeft
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.google.android.material.snackbar.Snackbar
@@ -39,10 +44,14 @@ import com.naver.maps.map.util.FusedLocationSource
 import com.udangtangtang.haveibeen.R
 import com.udangtangtang.haveibeen.databinding.ActivityMainBinding
 import com.udangtangtang.haveibeen.databinding.MarkerInfowindowBinding
+import com.udangtangtang.haveibeen.entity.InfoWindowData
+import com.udangtangtang.haveibeen.entity.RecordEntity
+import com.udangtangtang.haveibeen.fragment.RecordViewFragment
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import com.udangtangtang.haveibeen.util.GeocodingHelper
 import com.udangtangtang.haveibeen.util.PictureScanHelper
 import com.udangtangtang.haveibeen.util.RankingCardAdapter
+import com.udangtangtang.haveibeen.viewmodel.InfoWindowViewModel
 import kotlinx.coroutines.*
 import kotlin.math.roundToInt
 
@@ -59,6 +68,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
     private val TAG="MainActivity"
     private lateinit var db : RecordRepository
     private lateinit var sharedPreferences: SharedPreferences
+    public lateinit var infoWindowData : LiveData<InfoWindowData>
 
     companion object {
         private const val PERMISSION_REQUEST_CODE = 100
@@ -139,6 +149,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
 
         // 정보창 어댑터 설정
         mInfoWindow.adapter = object : InfoWindow.DefaultViewAdapter(this) {
+            @RequiresApi(Build.VERSION_CODES.TIRAMISU)
             override fun getContentView(p0: InfoWindow): View {
                 // 선택한 정보창에 해당하는 마커 객체 가져오기
                 val marker = p0.marker
@@ -148,22 +159,26 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                 selectedLatLng[1] = marker.position.longitude
 
                 // 가져온 데이터로 뷰 만들기
-                runBlocking {
-                    val record = db.getRecord(selectedLatLng.get(0), selectedLatLng.get(1))
-                    // TODO: Fix
-                    infoWindowBinding.infoWindowData = record
-                    with(infoWindowBinding) {
-                        if (record.locationName == null) infoWindowLocationTitle.text =
-                            getString(R.string.no_location_info) else infoWindowLocationTitle.text =
-                            record.locationName
-                        if (record.rating == null) infoWindowRatingBar.rating =
-                            getString(R.string.no_rating).toFloat()
-                        else infoWindowRatingBar.rating = record.rating!!
-                        infoWindowLocationAddress.text = GeocodingHelper.getAddressToString(record.address)
-                        infoWindowDatetime.text = record.datetime
+                CoroutineScope(Dispatchers.Main).launch {
+                    val factory= InfoWindowViewModel.InfoWindowViewModelFactory(db, selectedLatLng)
+                    val infoWindowViewModel=ViewModelProvider(this@MainActivity, factory).get(InfoWindowViewModel::class.java)
+                    infoWindowBinding.viewModel=infoWindowViewModel
+
+                    val infoWindowDataObserver=object :Observer<InfoWindowData>{
+                        override fun onChanged(t: InfoWindowData?) {
+                            Log.d(TAG, t.toString())
+                            if(t!=null){
+                                infoWindowViewModel.setInfoWindow(t)
+                                if(infoWindowViewModel.currentRecord.value!!.address!=null){
+                                    infoWindowBinding.infoWindowLocationAddress.text=GeocodingHelper.getAddressToString(infoWindowViewModel.currentRecord.value!!.address!!)
+                                }
+                                Log.d(TAG, "InfoWindow changed : "+t.toString())
+                            }
+                        }
                     }
+
+                    infoWindowViewModel.currentRecord.observe(this@MainActivity, infoWindowDataObserver)
                 }
-                Log.d(TAG, "infowindowdata" + infoWindowBinding.infoWindowData.toString())
                 return infoWindowBinding.root
             }
 
@@ -180,7 +195,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
 
         // DB로부터 마커 추가
         CoroutineScope(Dispatchers.Main).launch {
-            Log.d(TAG, "dbcount0"+db.getTotalPictureCount().toString())
+            Log.d(TAG, "dbcount : "+db.getTotalPictureCount().toString())
             val pictureCount=db.getTotalPictureCount()
             val pictureList=db.getPictureList()
             if (pictureCount>0) {

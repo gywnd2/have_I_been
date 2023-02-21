@@ -1,33 +1,29 @@
 package com.udangtangtang.haveibeen.database
 
 import android.content.Context
-import androidx.room.AutoMigration
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
+import android.location.Address
+import androidx.room.*
 import com.udangtangtang.haveibeen.dao.PictureDao
 import com.udangtangtang.haveibeen.entity.PictureEntity
+import com.udangtangtang.haveibeen.util.AddressTypeConverter
+import kotlinx.coroutines.CoroutineScope
 
 @Database(entities= arrayOf(PictureEntity::class), version=1)
+@TypeConverters(AddressTypeConverter::class)
 abstract class PictureDatabase :RoomDatabase(){
     abstract fun getPictureDao() : PictureDao
 
     companion object{
+        @Volatile
         var INSTANCE: PictureDatabase?=null
 
-        fun getInstance(context: Context) : PictureDatabase? {
-            if(INSTANCE ==null){
-                synchronized(PictureDatabase::class){
-                    INSTANCE = Room.databaseBuilder(context.applicationContext, PictureDatabase::class.java, "Pictures.db")
-                            // Drop database when update
-                            // TODO : Migrate DB on NON-Destructive way
-                        .fallbackToDestructiveMigration()
-                        .allowMainThreadQueries()
-                        .build()
-                }
+        suspend fun getInstance(context: Context, scope:CoroutineScope) : PictureDatabase? {
+            return INSTANCE?: synchronized(this){
+                INSTANCE=Room.databaseBuilder(context.applicationContext, PictureDatabase::class.java, "Pictures.db")
+                    .fallbackToDestructiveMigration()
+                    .build()
+                INSTANCE
             }
-
-            return INSTANCE
         }
     }
 }

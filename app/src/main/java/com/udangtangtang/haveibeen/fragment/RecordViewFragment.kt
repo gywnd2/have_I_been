@@ -9,11 +9,14 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.udangtangtang.haveibeen.R
+import com.udangtangtang.haveibeen.activity.MainActivity
 import com.udangtangtang.haveibeen.activity.RecordDetailActivity
 import com.udangtangtang.haveibeen.databinding.FragmentRecordViewBinding
+import com.udangtangtang.haveibeen.entity.RecordEntity
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import com.udangtangtang.haveibeen.util.RecordPictureAdapter
 import com.udangtangtang.haveibeen.viewmodel.RecordViewModel
@@ -34,6 +37,7 @@ class RecordViewFragment : Fragment() {
     private lateinit var builder: AlertDialog.Builder
     private lateinit var parentActivity : RecordDetailActivity
     private lateinit var db : RecordRepository
+    private lateinit var record : LiveData<RecordEntity>
 
 
     override fun onCreateView(
@@ -50,10 +54,11 @@ class RecordViewFragment : Fragment() {
         val factory =  RecordViewModelFactory(db, selectedLatLng!!)
         recordViewModel= ViewModelProvider(this, factory).get(RecordViewModel::class.java)
         binding.viewModel= recordViewModel
+        binding.lifecycleOwner=viewLifecycleOwner
         binding.isEditing=false
-        recordViewModel.currentRecord.observe(parentActivity, Observer{
-            recordViewModel.setViewRecord(it)
-            Log.d(TAG, "Record changed : "+it.toString())
+
+        recordViewModel.currentRecord.observe(viewLifecycleOwner, Observer {
+            if(it!=null) recordViewModel.setViewRecord(it)
         })
 
         // 전달받은 위/경도 정보를 ViewPager 어댑터로 전달
@@ -78,7 +83,6 @@ class RecordViewFragment : Fragment() {
                         binding.isEditing=false
                         // DB 업데이트
                         with(binding){ recordViewModel.updateRecord(recordDetailLocationName.text.toString(), recordDetailRating.rating, recordDetailComment.text.toString()) }
-
                         // 저장 알림
                         Toast.makeText(parentActivity, getString(R.string.saved), Toast.LENGTH_LONG)
                             .show()

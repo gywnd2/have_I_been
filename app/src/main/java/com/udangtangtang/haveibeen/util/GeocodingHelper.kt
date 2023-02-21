@@ -22,7 +22,6 @@ import java.io.IOException
 class GeocodingHelper(private val context: Context, private val db : RecordRepository) {
     // TODO : 주소 수정 기능
     private var geocoder: Geocoder
-    private val TAG = "GeocodingHelper"
     var result=""
 
     // AdminArea -> 특별, 광역시/도
@@ -35,24 +34,36 @@ class GeocodingHelper(private val context: Context, private val db : RecordRepos
     }
 
     companion object{
-        fun getAddressToString(addr:Address):String{
-            var address=""
-            with(addr){
-                address+=adminArea
-                address+=" "
-                address+=locality
-                address+=" "
-                address+=subLocality
-                address+=" "
-                address+=thoroughfare
+        private val TAG="GeocodingHelper"
+
+        fun getAddressToString(addr:Address):String?{
+            if (addr==null){
+                Log.d(TAG, "addr is null")
+                return null
+            }else{
+                Log.d(TAG, "addr is not null ")
+                var address=""
+                with(addr){
+                    address+=adminArea
+                    address+=" "
+                    address+=locality
+                    address+=" "
+                    if(!subLocality.isNullOrEmpty()){
+                        address+=subLocality
+                        address+=" "
+                    }
+                    address+=thoroughfare
+                }
+                return address
             }
-            return address
+
         }
     }
 
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun getAddress(latitude: Double, longtitude: Double) {
+        Log.d(TAG, "Get address!!")
         // Geocoder를 통해 주소 획득
         geocoder.getFromLocation(
             latitude,
@@ -60,9 +71,7 @@ class GeocodingHelper(private val context: Context, private val db : RecordRepos
             3,
             object : Geocoder.GeocodeListener {
                 override fun onGeocode(addressList: MutableList<Address>) {
-                    for (i in addressList){
-                        Log.d(TAG, i.subLocality.toString())
-                    }
+                        Log.d(TAG, addressList[0].toString())
                     CoroutineScope(Dispatchers.IO).launch {
                         db.updatePictureAddress(latitude, longtitude, addressList[0])
                     }

@@ -12,6 +12,9 @@ import com.udangtangtang.haveibeen.activity.RecordDetailActivity
 import com.udangtangtang.haveibeen.databinding.ViewpagerImageHolderBinding
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import com.udangtangtang.haveibeen.util.RecordPictureAdapter.RecordPictureHolder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
 
@@ -23,7 +26,7 @@ class RecordPictureAdapter(
 ) : RecyclerView.Adapter<RecordPictureHolder>() {
 
     private lateinit var binding : ViewpagerImageHolderBinding
-    private var pictures : List<String>
+    private lateinit var pictures : List<String>
     companion object{
         private const val TAG ="RecordPictureAdapter"
     }

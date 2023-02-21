@@ -28,20 +28,16 @@ class RecordDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityRecordDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        // 액티비티 타이틀 설정
+        title = getString(R.string.no_location_info)
+
         db= RecordRepository(application)
-            fragmentManager=supportFragmentManager
-            // MainActivity로 부터 fileName 받아오기
-            val selectedLatLng = intent.getDoubleArrayExtra("selectedLatLng")!!
-                    CoroutineScope(Dispatchers.IO).launch {
-                async {
-                    val record=db.getRecord(selectedLatLng!![0], selectedLatLng[1])
-                    // 액티비티 타이틀 설정
-                    this@RecordDetailActivity.title = if (record.locationName == null) getString(R.string.no_location_info) else getString(R.string.no_location_info)
-            }.await()
-        }
-
-
-
+        fragmentManager=supportFragmentManager
+        // MainActivity로 부터 fileName 받아오기
+        val selectedLatLng = intent.getDoubleArrayExtra("selectedLatLng")!!
+//        runBlocking {
+//            val record=db.getRecord(selectedLatLng!![0], selectedLatLng[1])
+//        }
         pictureFragment=PictureViewFragment()
         recordFragment=RecordViewFragment()
 
@@ -49,9 +45,6 @@ class RecordDetailActivity : AppCompatActivity() {
         fragmentManager.beginTransaction()
             .add(R.id.container_record_fragments, recordFragment)
             .commit()
-
-        // TODO : 사진 터치 시 프래그먼트 전환
-
     }
 
     fun changeFragment(){

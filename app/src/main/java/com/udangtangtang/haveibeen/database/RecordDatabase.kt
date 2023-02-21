@@ -1,32 +1,29 @@
 package com.udangtangtang.haveibeen.database
 
 import android.content.Context
-import androidx.room.AutoMigration
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
+import android.icu.text.AlphabeticIndex.Record
+import androidx.room.*
 import com.udangtangtang.haveibeen.dao.RecordDao
 import com.udangtangtang.haveibeen.entity.RecordEntity
+import com.udangtangtang.haveibeen.util.AddressTypeConverter
+import kotlinx.coroutines.CoroutineScope
 
 @Database(entities=arrayOf(RecordEntity::class), version=1)
+@TypeConverters(AddressTypeConverter::class)
 abstract class RecordDatabase :RoomDatabase(){
     abstract fun getRecordDao(): RecordDao
 
     companion object{
+        @Volatile
         var INSTANCE: RecordDatabase?=null
 
-        fun getInstance(context : Context) : RecordDatabase?{
-            if(INSTANCE ==null){
-                synchronized(RecordDatabase::class){
-                    INSTANCE = Room.databaseBuilder(context.applicationContext, RecordDatabase::class.java, "Records.db")
-                    // Drop database when update
-                    // TODO : Migrate DB on NON-Destructive way
-                        .fallbackToDestructiveMigration()
-                        .allowMainThreadQueries()
-                        .build()
-                }
+        suspend fun getInstance(context : Context, scope : CoroutineScope) : RecordDatabase?{
+            return INSTANCE?: synchronized(this){
+                INSTANCE=Room.databaseBuilder(context.applicationContext, RecordDatabase::class.java, "Records.db")
+                    .fallbackToDestructiveMigration()
+                    .build()
+                INSTANCE
             }
-            return INSTANCE
         }
     }
 
