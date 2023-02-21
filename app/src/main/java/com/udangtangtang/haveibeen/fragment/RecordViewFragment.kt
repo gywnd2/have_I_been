@@ -24,6 +24,7 @@ import com.udangtangtang.haveibeen.viewmodel.RecordViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class RecordViewFragment : Fragment() {
     companion object{
@@ -56,6 +57,12 @@ class RecordViewFragment : Fragment() {
         binding.viewModel= recordViewModel
         binding.lifecycleOwner=viewLifecycleOwner
         binding.isEditing=false
+
+        binding.recordDetailButtonTest.setOnClickListener {
+            CoroutineScope(Dispatchers.IO).launch {
+                Log.d(TAG, db.getAllRecords().toString())
+            }
+        }
 
         recordViewModel.currentRecord.observe(viewLifecycleOwner, Observer {
             if(it!=null) recordViewModel.setViewRecord(it)

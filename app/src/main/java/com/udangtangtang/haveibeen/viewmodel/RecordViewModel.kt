@@ -40,9 +40,9 @@ class RecordViewModel(val db:RecordRepository, val selectedLatLng : DoubleArray)
     }
 
     fun setViewRecord(record : RecordEntity){
-        if (_currentRecord.value!=record){
+//        if (_currentRecord.value!=record){
             _currentRecord.value=record
-        }
+//        }
         Log.d(TAG, "setrecord: "+_currentRecord.toString()+"\n"+record.toString())
     }
 

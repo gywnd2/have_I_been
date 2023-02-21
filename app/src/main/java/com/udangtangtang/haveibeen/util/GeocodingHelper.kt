@@ -28,6 +28,8 @@ class GeocodingHelper(private val context: Context, private val db : RecordRepos
     // Locality -> 시
     // SubLocality -> 구 (특별 / 광역시의 구 포함)
     // Thoroughfare -> 읍/면/동/로
+    // SubThoroughfare -> 번지
+
     init {
         // 역 지오코딩
         geocoder = Geocoder(context)
@@ -36,34 +38,36 @@ class GeocodingHelper(private val context: Context, private val db : RecordRepos
     companion object{
         private val TAG="GeocodingHelper"
 
-        fun getAddressToString(addr:Address):String?{
-            if (addr==null){
-                Log.d(TAG, "addr is null")
-                return null
-            }else{
-                Log.d(TAG, "addr is not null ")
-                var address=""
-                with(addr){
+        fun getAddressToString(addr:Address):String{
+            var address=""
+            with(addr){
+                if(!adminArea.isNullOrEmpty()){
                     address+=adminArea
                     address+=" "
+                }
+                if(!locality.isNullOrEmpty()){
                     address+=locality
                     address+=" "
-                    if(!subLocality.isNullOrEmpty()){
-                        address+=subLocality
-                        address+=" "
-                    }
-                    address+=thoroughfare
                 }
-                return address
+                if(!subLocality.isNullOrEmpty()){
+                    address+=subLocality
+                    address+=" "
+                }
+                if(!thoroughfare.isNullOrEmpty()){
+                    address+=thoroughfare
+                    address+=" "
+                }
+                if(!subThoroughfare.isNullOrEmpty()) {
+                    address += subThoroughfare
+                }
             }
-
+            return address
         }
     }
 
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun getAddress(latitude: Double, longtitude: Double) {
-        Log.d(TAG, "Get address!!")
         // Geocoder를 통해 주소 획득
         geocoder.getFromLocation(
             latitude,
@@ -73,7 +77,7 @@ class GeocodingHelper(private val context: Context, private val db : RecordRepos
                 override fun onGeocode(addressList: MutableList<Address>) {
                         Log.d(TAG, addressList[0].toString())
                     CoroutineScope(Dispatchers.IO).launch {
-                        db.updatePictureAddress(latitude, longtitude, addressList[0])
+                        db.updatePictureAddress(latitude, longtitude, getAddressToString(addressList[0]))
                     }
                 }
                 override fun onError(errorMessage: String?) {

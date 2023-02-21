@@ -1,20 +1,26 @@
 package com.udangtangtang.haveibeen.util
 
 import android.location.Address
+import android.util.Log
+import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
-class AddressTypeConverter {
+@ProvidedTypeConverter
+class AddressTypeConverter(private val gson: Gson) {
     @TypeConverter
-    fun toString(addr : Address?) : String{
+    fun toJsonString(addr : Address?) : String?{
+        Log.d("TypeConverter / received addr : ",addr.toString())
         val type=object:TypeToken<Address>(){}.type
-        return Gson().toJson(addr, type)
+        Log.d("TypeConverter / address to string", gson.toJson(addr, type))
+        return gson.toJson(addr, type)
     }
 
     @TypeConverter
-    fun toAddress(addrStr : String) : Address?{
+    fun fromJsonString(addrStr : String) : Address{
         val type=object:TypeToken<Address>(){}.type
-        return Gson().fromJson(addrStr, type)
+//        Log.d("TypeConverter / string to address", gson.fromJson(addrStr, type).toString())
+        return gson.fromJson(addrStr, type)
     }
 }

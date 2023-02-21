@@ -1,11 +1,13 @@
 package com.udangtangtang.haveibeen.repository
 
 import android.app.Application
+import android.icu.text.AlphabeticIndex.Record
 import android.location.Address
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
+import com.google.gson.Gson
 import com.udangtangtang.haveibeen.dao.PictureDao
 import com.udangtangtang.haveibeen.dao.RecordDao
 import com.udangtangtang.haveibeen.database.PictureDatabase
@@ -35,10 +37,12 @@ class RecordRepository(application: Application) {
         }
     }
 
+    fun getAllRecords():List<RecordEntity>{
+        return recordDao.getAllData()
+    }
+
     suspend fun getRecord(latitude: Double, longtitude: Double): LiveData<RecordEntity> {
         if (recordDao.isExist(latitude, longtitude)) {
-            Log.d(TAG, "return exist: "+recordDao.isExist(latitude, longtitude).toString())
-            Log.d(TAG, "return record: "+recordDao.getEntity(latitude, longtitude).value.toString())
             return CoroutineScope(Dispatchers.IO).async {
                 recordDao.getEntity(latitude, longtitude)
             }.await()
@@ -52,8 +56,9 @@ class RecordRepository(application: Application) {
                 null,
                 null
             )
-            createRecord(record)
-            Log.d(TAG, "Create record : "+record.toString())
+            CoroutineScope(Dispatchers.IO).async{
+                createRecord(record)
+            }.await()
             return CoroutineScope(Dispatchers.IO).async {
                 recordDao.getEntity(latitude, longtitude)
                 }.await()
@@ -98,15 +103,14 @@ class RecordRepository(application: Application) {
         }.await()
     }
 
-    suspend fun updatePictureAddress(latitude: Double, longtitude: Double, address: Address) {
+    suspend fun updatePictureAddress(latitude: Double, longtitude: Double, address: String) {
         withContext(Dispatchers.IO){
             if (address != null) {
-                Log.d(TAG, "update picture address : "+address.toString())
+                Log.d(TAG, "update address of : "+pictureDao.getFileOnLocation(latitude,longtitude)+" to : "+ address)
                 pictureDao.updateAddress(latitude, longtitude, address)
             } else {
                 Log.d(TAG, "null address received")
             }
-//            Log.d(TAG, "record address updated : " + pictureDao.getAddress(latitude, longtitude).toString())
         }
     }
 

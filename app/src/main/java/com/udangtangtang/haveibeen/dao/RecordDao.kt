@@ -23,4 +23,6 @@ interface RecordDao {
     suspend fun isExist(lat : Double, lng : Double): Boolean
     @Query("SELECT address, rating, datetime, locationName FROM recordDB WHERE latitude=:lat AND longtitude =:lng")
     fun getInfoWindowData(lat:Double, lng: Double):LiveData<InfoWindowData>
+    @Query("SELECT * FROM recordDB")
+    fun getAllData():List<RecordEntity>
 }

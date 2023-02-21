@@ -84,4 +84,6 @@ dependencies {
     implementation "androidx.room:room-ktx:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
 
+    // Room debug
+    debugImplementation 'com.amitshekhar.android:debug-db:1.0.6'
 }

@@ -11,6 +11,6 @@ data class PictureEntity(
     @ColumnInfo val longtitude: Double,
     @ColumnInfo val absolutePath : String,
     @ColumnInfo val fileName: String,
-    @ColumnInfo val address: Address?,
+    @ColumnInfo val address: String?,
     @ColumnInfo val datetime : String,
 )

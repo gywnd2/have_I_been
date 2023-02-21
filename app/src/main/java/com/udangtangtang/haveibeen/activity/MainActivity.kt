@@ -169,8 +169,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, Overlay.OnClickLis
                             Log.d(TAG, t.toString())
                             if(t!=null){
                                 infoWindowViewModel.setInfoWindow(t)
-                                if(infoWindowViewModel.currentRecord.value!!.address!=null){
-                                    infoWindowBinding.infoWindowLocationAddress.text=GeocodingHelper.getAddressToString(infoWindowViewModel.currentRecord.value!!.address!!)
+                                if(infoWindowViewModel.currentRecord.value!!.address==null){
+                                    infoWindowBinding.infoWindowLocationAddress.text=getString(R.string.no_address)
                                 }
                                 Log.d(TAG, "InfoWindow changed : "+t.toString())
                             }
