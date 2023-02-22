@@ -59,13 +59,11 @@ class RecordViewFragment : Fragment() {
         binding.isEditing=false
 
         binding.recordDetailButtonTest.setOnClickListener {
-            CoroutineScope(Dispatchers.IO).launch {
-                Log.d(TAG, db.getAllRecords().toString())
-            }
+            Toast.makeText(context, binding.viewModel!!.currentRecord.value.toString(), Toast.LENGTH_LONG).show()
         }
 
         recordViewModel.currentRecord.observe(viewLifecycleOwner, Observer {
-            if(it!=null) recordViewModel.setViewRecord(it)
+            recordViewModel.setViewRecord()
         })
 
         // 전달받은 위/경도 정보를 ViewPager 어댑터로 전달

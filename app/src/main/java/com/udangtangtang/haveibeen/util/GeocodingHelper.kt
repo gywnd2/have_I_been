@@ -41,6 +41,7 @@ class GeocodingHelper(private val context: Context, private val db : RecordRepos
         fun getAddressToString(addr:Address):String{
             var address=""
             with(addr){
+                Log.d(TAG,">>>>>>>>>>>> :"+"admin : "+adminArea+" subadmin: "+subAdminArea+" locality: "+locality+" sublocality : "+subLocality+" thoroughfare : "+thoroughfare+" subthoroughfare : "+subThoroughfare+" premises : "+premises+" feature : "+featureName)
                 if(!adminArea.isNullOrEmpty()){
                     address+=adminArea
                     address+=" "

@@ -9,41 +9,43 @@ import com.udangtangtang.haveibeen.entity.RecordEntity
 import com.udangtangtang.haveibeen.repository.RecordRepository
 import kotlinx.coroutines.*
 
-class RecordViewModel(val db:RecordRepository, val selectedLatLng : DoubleArray) : ViewModel(){
+class RecordViewModel(private val db:RecordRepository, private val selectedLatLng : DoubleArray) : ViewModel(){
     private val _currentRecord=MutableLiveData<RecordEntity>()
 
     companion object {
         private const val TAG ="RecordViewModel"
     }
 
-    val currentRecord : LiveData<RecordEntity>
-        get()=_currentRecord
-
     init{
-        Log.d(TAG, "Recordviewmodel init")
-        CoroutineScope(Dispatchers.IO).launch {
-            _currentRecord.postValue(async {
-                db.getRecord(selectedLatLng[0], selectedLatLng[1]).value
-        }.await())
-
-        Log.d(TAG, db.getRecord(selectedLatLng[0], selectedLatLng[1]).value.toString())
+        runBlocking {
+            _currentRecord.value=db.getRecord(selectedLatLng[0], selectedLatLng[1]).value
         }
     }
+
+    val currentRecord : LiveData<RecordEntity>
+        get()=_currentRecord
 
     fun updateRecord(locName: String, rating: Float, comment: String){
         _currentRecord.value!!.locationName =locName
         _currentRecord.value!!.rating=rating
         _currentRecord.value!!.comment=comment
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch {
             db.updateRecord(_currentRecord.value!!)
         }
     }
 
-    fun setViewRecord(record : RecordEntity){
-//        if (_currentRecord.value!=record){
-            _currentRecord.value=record
-//        }
-        Log.d(TAG, "setrecord: "+_currentRecord.toString()+"\n"+record.toString())
+    fun setViewRecord(){
+        viewModelScope.launch {
+            if(async { db.isRecordExist(selectedLatLng[0], selectedLatLng[1]) }.await()){
+                db.createRecord(selectedLatLng[0], selectedLatLng[1])
+                _currentRecord.value=db.getRecord(selectedLatLng[0], selectedLatLng[1])!!.value
+            }else{
+                val record=db.getRecord(selectedLatLng[0], selectedLatLng[1])!!.value
+                if(currentRecord.value!=record){
+                    _currentRecord.value=record!!
+                }
+            }
+        }
     }
 
 

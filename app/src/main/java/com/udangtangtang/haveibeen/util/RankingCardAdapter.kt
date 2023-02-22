@@ -9,8 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.udangtangtang.haveibeen.databinding.ViewpagerRankHolderBinding
 import com.udangtangtang.haveibeen.model.AddressRankTuple
 import com.udangtangtang.haveibeen.repository.RecordRepository
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 
 class RankingCardAdapter(
     private val context: Context,
@@ -22,12 +21,12 @@ class RankingCardAdapter(
     }
 
     private lateinit var binding : ViewpagerRankHolderBinding
-    private var rankInfo : List<AddressRankTuple>
+    private lateinit var rankInfo : List<AddressRankTuple>
 
     init {
         runBlocking {
             rankInfo=db.getAdderessRanking()
-            Log.d(TAG, rankInfo.size.toString())
+            Log.d(TAG, rankInfo.toString())
         }
     }
 
@@ -37,8 +36,11 @@ class RankingCardAdapter(
     }
 
     override fun onBindViewHolder(holder: RankCardHolder, position: Int) {
-        Log.d(TAG, position.toString())
-        holder.onBind(position)
+        Log.d(TAG, holder.adapterPosition.toString())
+        // Correct position
+        // setIsRecyclable, holder.adapterPosition
+        holder.setIsRecyclable(false)
+        holder.onBind(holder.adapterPosition)
     }
 
     override fun getItemCount(): Int {

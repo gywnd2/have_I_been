@@ -18,6 +18,7 @@ import com.udangtangtang.haveibeen.entity.RecordEntity
 import com.udangtangtang.haveibeen.model.AddressRankTuple
 import com.udangtangtang.haveibeen.model.LatLngTuple
 import kotlinx.coroutines.*
+import kotlinx.coroutines.selects.select
 
 class RecordRepository(application: Application) {
     private lateinit var recordDao: RecordDao
@@ -41,33 +42,27 @@ class RecordRepository(application: Application) {
         return recordDao.getAllData()
     }
 
-    suspend fun getRecord(latitude: Double, longtitude: Double): LiveData<RecordEntity> {
-        if (recordDao.isExist(latitude, longtitude)) {
-            return CoroutineScope(Dispatchers.IO).async {
-                recordDao.getEntity(latitude, longtitude)
-            }.await()
-        } else {
-            val record = RecordEntity(
-                latitude,
-                longtitude,
-                null,
-                pictureDao.getAddress(latitude, longtitude),
-                pictureDao.getDatetime(latitude, longtitude),
-                null,
-                null
-            )
-            CoroutineScope(Dispatchers.IO).async{
-                createRecord(record)
-            }.await()
-            return CoroutineScope(Dispatchers.IO).async {
-                recordDao.getEntity(latitude, longtitude)
-                }.await()
-            }
-        }
+    suspend fun isRecordExist(latitude: Double, longtitude: Double):Boolean {
+        return recordDao.isExist(latitude, longtitude)
+    }
 
-    suspend fun createRecord(record: RecordEntity) {
+    fun getRecord(latitude: Double, longtitude: Double): LiveData<RecordEntity> {
+        return recordDao.getEntity(latitude, longtitude)
+    }
+
+    suspend fun createRecord(latitude: Double, longtitude: Double) {
         withContext(Dispatchers.IO){
-            recordDao.insert(record)
+            recordDao.insert(
+                RecordEntity(
+                    latitude,
+                    longtitude,
+                    null,
+                    pictureDao.getAddress(latitude, longtitude),
+                    pictureDao.getDatetime(latitude, longtitude),
+                    null,
+                    null
+                )
+            )
         }
     }
 
